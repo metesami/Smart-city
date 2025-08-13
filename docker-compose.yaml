@@ -1,0 +1,44 @@
+version: "3.8"
+services:
+  timescaledb:
+    container_name: timescaledb
+    image: timescale/timescaledb:latest-pg14
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: mysecret
+      POSTGRES_DB: smartcity
+    ports:
+      - "5432:5432"
+    volumes:
+      - "C:/PhD/Docker/timescale_data:/var/lib/postgresql/data"
+    networks:
+      - smartcity_network
+
+  graphdb:
+    container_name: graphdb
+    image: ontotext/graphdb:10.6.3
+    ports:
+      - "7200:7200"
+    volumes:
+      - "C:/PhD/Docker/graphdb_data:/opt/graphdb/home"
+    networks:
+      - smartcity_network
+
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4:latest
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    volumes:
+      - "C:/PhD/Docker/pgadmin_data:/var/lib/pgadmin"
+    networks:
+      - smartcity_network
+    depends_on:
+      - timescaledb
+
+networks:
+  smartcity_network:
+    driver: bridge
