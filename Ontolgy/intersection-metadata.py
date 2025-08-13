@@ -29,6 +29,7 @@ g.add((intersection_uri, RDFS.label, Literal(f"Intersection {intersection_id}"))
 sensor_uri_map = {}
 street_uri_map = {}
 lane_uri_map = {}
+sensor_to_lane_map = {}
 for _, row in metadata_df.iterrows():
     sid = str(row["sensor_id"]).strip()
     way_id = row.get("way_id", None)
@@ -126,6 +127,7 @@ for _, row in metadata_df.iterrows():
     g.add((sensor_uri, CTDO.detectsTrafficOn, lane_uri))
     # Save sensor in map
     sensor_uri_map[sid] = str(sensor_uri)
+    sensor_to_lane_map[sid] = str(lane_uri)
 
 # ==== Dataset-level metadata ====
 dataset_uri = EX[f"dataset_intersection_{intersection_id}"]
@@ -134,8 +136,16 @@ g.add((dataset_uri, RDFS.label, Literal(f"Intersection {intersection_id} metadat
 g.add((dataset_uri, URIRef("http://purl.org/dc/terms/source"), Literal(file_path)))
 
 # Save authoritative mapping for reuse
-pd.Series(sensor_uri_map).to_json("/content/sensor_uri_map.json")
-pd.Series(lane_uri_map).to_json("/content/lane_uri_map.json")
+SENSOR_MAP_JSON = "/content/sensor_uri_map.json"
+LANE_MAP_JSON = "/content/lane_uri_map.json"
+SENSOR2LANE_JSON = "/content/sensor_to_lane_map.json"
+with open(SENSOR_MAP_JSON, "w") as f:
+    json.dump(sensor_uri_map, f, ensure_ascii=False, indent=2)
+with open(LANE_MAP_JSON, "w") as f:
+    json.dump(lane_uri_map, f, ensure_ascii=False, indent=2)
+with open(SENSOR2LANE_JSON, "w") as f:
+    json.dump(sensor_to_lane_map, f, ensure_ascii=False, indent=2)
+
 #  5. Save RDF to file
 output_path = "/mnt/data/A142_intersection_ontology.ttl"
 g.serialize(destination=output_path, format="turtle")
