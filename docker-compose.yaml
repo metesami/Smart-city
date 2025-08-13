@@ -1,4 +1,5 @@
 version: "3.8"
+
 services:
   timescaledb:
     container_name: timescaledb
@@ -38,6 +39,26 @@ services:
       - smartcity_network
     depends_on:
       - timescaledb
+
+  notebook:
+    container_name: notebook
+    image: jupyter/scipy-notebook:latest
+    environment:
+      - JUPYTER_TOKEN=smartcity
+      - PIP_ROOT_USER_ACTION=ignore
+      - PG_URL=postgresql://postgres:mysecret@timescaledb:5432/smartcity
+      - GDB_QUERY=http://graphdb:7200/repositories/smartcity_kg
+      - GDB_UPDATE=http://graphdb:7200/repositories/smartcity_kg/statements
+    ports:
+      - "8888:8888"
+    volumes:
+      - "C:/PhD/Docker/notebooks:/home/jovyan/work"
+      - "C:/PhD/Docker/data:/home/jovyan/data"
+    networks:
+      - smartcity_network
+    depends_on:
+      - timescaledb
+      - graphdb
 
 networks:
   smartcity_network:
