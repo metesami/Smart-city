@@ -136,9 +136,9 @@ g.add((dataset_uri, RDFS.label, Literal(f"Intersection {intersection_id} metadat
 g.add((dataset_uri, URIRef("http://purl.org/dc/terms/source"), Literal(file_path)))
 
 # Save authoritative mapping for reuse
-SENSOR_MAP_JSON = "/content/sensor_uri_map.json"
-LANE_MAP_JSON = "/content/lane_uri_map.json"
-SENSOR2LANE_JSON = "/content/sensor_to_lane_map.json"
+SENSOR_MAP_JSON = "/content/drive/MyDrive/Smart-city/sensor_uri_map.json"
+LANE_MAP_JSON = "/content/drive/MyDrive/Smart-city/lane_uri_map.json"
+SENSOR2LANE_JSON = "/content/drive/MyDrive/Smart-city/sensor_to_lane_map.json"
 with open(SENSOR_MAP_JSON, "w") as f:
     json.dump(sensor_uri_map, f, ensure_ascii=False, indent=2)
 with open(LANE_MAP_JSON, "w") as f:
@@ -147,7 +147,7 @@ with open(SENSOR2LANE_JSON, "w") as f:
     json.dump(sensor_to_lane_map, f, ensure_ascii=False, indent=2)
 
 #  5. Save RDF to file
-output_path = "/mnt/data/A142_intersection_ontology.ttl"
+output_path = "/content/drive/MyDrive/Smart-city/A142_intersection_ontology.ttl"
 g.serialize(destination=output_path, format="turtle")
 
 print(f"✅ Done! Total triples in intersection ontology: {len(g)}")
