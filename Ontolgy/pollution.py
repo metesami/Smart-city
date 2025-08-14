@@ -3,7 +3,7 @@ from rdflib import Graph, Namespace, Literal, URIRef
 from rdflib.namespace import RDF, XSD
 import urllib.parse
 
-# === 1. Setup RDF Graph and Namespaces ===
+#  1. Setup RDF Graph and Namespaces 
 g = Graph()
 EX = Namespace("http://example.org/pollution/")
 POLL = Namespace("https://w3id.org/airpollution#")
@@ -14,11 +14,11 @@ g.bind("poll", POLL)
 g.bind("sosa", SOSA)
 g.bind("geo", GEO)
 
-# === 2. Metadata for pollution stations ===
+#  2. Metadata for pollution stations 
 # Add encoding parameter to handle potential decoding issues
 metadata = pd.read_csv("/content/drive/MyDrive/Test ontology_A142/Copy of pollution_stations_metadata.csv", sep=",", encoding='latin-1')
 
-# === 3. Create pollution station nodes ===
+#  3. Create pollution station nodes 
 station_uri_map = {}
 for _, row in metadata.iterrows():
     sid = row["StationID"]
@@ -32,7 +32,7 @@ for _, row in metadata.iterrows():
     g.add((station_uri, GEO.long, Literal(row["longitude"], datatype=XSD.float)))
     g.add((station_uri, POLL.osmId, Literal(row["OSM_ID"])))
 
-# === 4. Load pollution data in chunks ===
+#  4. Load pollution data in chunks 
 file_path = "/content/drive/MyDrive/Test ontology_A142/1 day pollution.csv"  # Correct path
 chunk_size = 500
 # Add encoding parameter to handle potential decoding issues for the pollution data file as well
@@ -73,7 +73,7 @@ for chunk in pollution_chunks:
     for s, p, o in triples_to_add:
         g.add((s, p, o))
 
-# === 5. Save output ===
+#  5. Save output 
 output_path = "/content/A142_pollution_ontology.ttl"
 g.serialize(destination=output_path, format="turtle")
 print(f"✅ Done! Total triples in pollution ontology: {len(g)}")

@@ -30,10 +30,11 @@ g.bind("sosa", SOSA)
 g.bind("time", TIME)
 
 # Declare observable properties once
-VehicleCount       = EX.VehicleCount
-AverageDwellTime   = EX.AverageDwellTime
-g.add((VehicleCount, RDF.type, SOSA.ObservableProperty))
-g.add((AverageDwellTime, RDF.type, SOSA.ObservableProperty))
+VehicleCount       = EX.VehicleCount;g.add((VehicleCount, RDF.type, SOSA.ObservableProperty))
+AverageDwellTime   = EX.AverageDwellTime;g.add((AverageDwellTime, RDF.type, SOSA.ObservableProperty))
+
+#avoid re-adding same time Instant within run
+time_inst_added = set()
 
 # ---- Load traffic CSV in chunks ----
 chunk_size = 400
@@ -79,8 +80,11 @@ for chunk in traffic_chunks:
             # time:Instant node
             t_key = urllib.parse.quote_plus(iso_t)
             t_inst = EX[f"t_{t_key}"]
-            triples_to_add.append((t_inst, RDF.type, TIME.Instant))
-            triples_to_add.append((t_inst, TIME.inXSDDateTime, Literal(iso_t, datatype=XSD.dateTime)))
+            if t_key not in time_inst_added:
+                triples_to_add.append((t_inst, RDF.type, TIME.Instant))
+                triples_to_add.append((t_inst, TIME.inXSDDateTime, Literal(iso_t, datatype=XSD.dateTime)))
+                time_inst_added.add(t_key)
+
 
             # intersection
             inter_id = intersection_ids.iloc[i]
@@ -90,7 +94,7 @@ for chunk in traffic_chunks:
             lane_uri_str = sensor_to_lane_map.get(sid)
             lane_uri = URIRef(lane_uri_str) if lane_uri_str else None
 
-            # === Vehicle Count Observation ===
+            #  Vehicle Count Observation 
             obs_count = EX[f"obsCount_{sid}_{t_key}"]
             triples_to_add.append((obs_count, RDF.type, SOSA.Observation))
             triples_to_add.append((obs_count, SOSA.madeBySensor, sensor_uri))
@@ -101,7 +105,7 @@ for chunk in traffic_chunks:
             if lane_uri:
                 triples_to_add.append((obs_count, SOSA.hasFeatureOfInterest, lane_uri))
 
-            # === Average Dwell Time Observation ===
+            #  Average Dwell Time Observation 
             obs_dwell = EX[f"obsDwell_{sid}_{t_key}"]
             g.add((obs_dwell, RDF.type, SOSA.Observation))
             g.add((obs_dwell, SOSA.madeBySensor, sensor_uri))

@@ -129,7 +129,7 @@ for _, row in metadata_df.iterrows():
     sensor_uri_map[sid] = str(sensor_uri)
     sensor_to_lane_map[sid] = str(lane_uri)
 
-# ==== Dataset-level metadata ====
+# = Dataset-level metadata =
 dataset_uri = EX[f"dataset_intersection_{intersection_id}"]
 g.add((dataset_uri, RDF.type, URIRef("http://purl.org/dc/terms/Dataset")))
 g.add((dataset_uri, RDFS.label, Literal(f"Intersection {intersection_id} metadata", lang="en")))
