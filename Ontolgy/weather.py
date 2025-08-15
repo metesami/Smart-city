@@ -28,7 +28,7 @@ geom     = EX[f"geom_{station_id}"]
 g.add((sensor, RDF.type, SOSA.Sensor))
 g.add((sensor, SOSA.isHostedBy, station))
 g.add((station, SOSA.hosts, sensor))
-g.add((station, RDF.type, SOSA.Platform))
+g.add((station, RDF.type, SOSA.platform))
 g.add((station, GEO.hasGeometry, geom))
 g.add((geom, GEO.asWKT, Literal(f"POINT({lon} {lat})", datatype=GEO.wktLiteral)))
 
