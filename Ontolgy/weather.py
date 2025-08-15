@@ -22,8 +22,13 @@ g.bind("unit",UNIT)
 station_id = "Darmstadt_1"
 lat, lon = 49.881, 8.678
 station  = EX[f"station_{station_id}"]
+sensor = EX[f"sensor_{station_id}"]
 geom     = EX[f"geom_{station_id}"]
-g.add((station, RDF.type, SOSA.Sensor))
+
+g.add((sensor, RDF.type, SOSA.Sensor))
+g.add((sensor, SOSA.isHostedBy, station))
+g.add((station, SOSA.hosts, sensor))
+g.add((station, RDF.type, SOSA.Platform))
 g.add((station, GEO.hasGeometry, geom))
 g.add((geom, GEO.asWKT, Literal(f"POINT({lon} {lat})", datatype=GEO.wktLiteral)))
 
@@ -70,7 +75,7 @@ for chunk in weather_chunks:
             obs = EX[f"obs_{station_id}_{tkey}_{oname}"]
             triples.extend([
                 (obs, RDF.type, SOSA.Observation),
-                (obs, SOSA.madeBySensor, station),
+                (obs, SOSA.madeBySensor, sensor),
                 (obs, SOSA.observedProperty, prop_uri),
                 (obs, SOSA.hasSimpleResult, Literal(val, datatype=xsd_dt)),
                 (obs, SOSA.phenomenonTime, tinst),
@@ -91,7 +96,7 @@ for chunk in weather_chunks:
         if pd.notna(row.get("wind_speed")):
             add_obs(WindSpeed,     float(row["wind_speed"]), XSD.double, UNIT["M-PER-SEC"])
         if pd.notna(row.get("wind_direction")):
-            add_obs(WindDir,       float(row["wind_direction"]), XSD.double)  # unit is degrees (UNIT.DEG) if desired
+            add_obs(WindDir,       float(row["wind_direction"]), XSD.double,UNIT.DEG)  # unit is degrees (UNIT.DEG) if desired
         if pd.notna(row.get("RWS_IND_10")):
             add_obs(RainFlag,      bool(int(row["RWS_IND_10"])), XSD.boolean)
 

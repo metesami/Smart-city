@@ -6,13 +6,13 @@ from rdflib import Graph, Namespace, Literal, URIRef
 from rdflib.namespace import RDF, XSD
 import urllib.parse
 
-# ---- Namespaces ----
+#  Namespaces 
 EX   = Namespace("http://example.org/traffic/")
 CTDO = Namespace("https://w3id.org/ctdo#")
 SOSA = Namespace("http://www.w3.org/ns/sosa/")
 TIME = Namespace("http://www.w3.org/2006/time#")
 
-# ---- Load URI maps created by the metadata script ----
+#  Load URI maps created by the metadata script 
 sensor_uri_map = json.load(open("/content/sensor_uri_map.json"))
 lane_uri_map   = json.load(open("/content/lane_uri_map.json"))
 
@@ -22,7 +22,7 @@ try:
 except Exception:
     sensor_to_lane_map = {}
 
-# ---- RDF graph ----
+#  RDF graph 
 g = Graph()
 g.bind("ex", EX)
 g.bind("ctdo", CTDO)
@@ -36,7 +36,7 @@ AverageDwellTime   = EX.AverageDwellTime;g.add((AverageDwellTime, RDF.type, SOSA
 #avoid re-adding same time Instant within run
 time_inst_added = set()
 
-# ---- Load traffic CSV in chunks ----
+#  Load traffic CSV in chunks 
 chunk_size = 400
 traffic_chunks = pd.read_csv(
     "/content/drive/MyDrive/Test ontology_A142/1 day A142 text.csv",
@@ -107,21 +107,21 @@ for chunk in traffic_chunks:
 
             #  Average Dwell Time Observation 
             obs_dwell = EX[f"obsDwell_{sid}_{t_key}"]
-            g.add((obs_dwell, RDF.type, SOSA.Observation))
-            g.add((obs_dwell, SOSA.madeBySensor, sensor_uri))
-            g.add((obs_dwell, SOSA.observedProperty, AverageDwellTime))
-            g.add((obs_dwell, SOSA.hasSimpleResult, Literal(float(dwell_val), datatype=XSD.double)))
-            g.add((obs_dwell, SOSA.phenomenonTime, t_inst))
-            g.add((obs_dwell, CTDO.belongsToIntersection, intersection_uri))
+            triples_to_add.append((obs_dwell, RDF.type, SOSA.Observation))
+            triples_to_add.append((obs_dwell, SOSA.madeBySensor, sensor_uri))
+            triples_to_add.append((obs_dwell, SOSA.observedProperty, AverageDwellTime))
+            triples_to_add.append((obs_dwell, SOSA.hasSimpleResult, Literal(float(dwell_val), datatype=XSD.double)))
+            triples_to_add.append((obs_dwell, SOSA.phenomenonTime, t_inst))
+            triples_to_add.append((obs_dwell, CTDO.belongsToIntersection, intersection_uri))
             if lane_uri:
-                g.add((obs_dwell, SOSA.hasFeatureOfInterest, lane_uri))
+                triples_to_add.append((obs_dwell, SOSA.hasFeatureOfInterest, lane_uri))
 
     # Add all triples for this chunk
     for s, p, o in triples_to_add:
         g.add((s, p, o))
     triples_to_add.clear()
 
-# ---- Save ----
+#  Save 
 output_path = "/content/A142_traffic_with_intersection.ttl"
 g.serialize(destination=output_path, format="turtle")
 print(f"✔️ RDF saved with intersection links: {len(g)} triples")
