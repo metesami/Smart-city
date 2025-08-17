@@ -21,8 +21,7 @@ PM10  = EX.PM10;   g.add((PM10,  RDF.type, SOSA.ObservableProperty))
 PM25  = EX.PM2_5;  g.add((PM25,  RDF.type, SOSA.ObservableProperty))
 
 # Metadata for pollution stations 
-# Add encoding parameter to handle potential decoding issues
-metadata_path = "/content/drive/MyDrive/Test ontology_A142/metadata.csv"  
+metadata_path = "/content/drive/MyDrive/Test ontology_A142/Pollution/pollution_stations_metadata.csv"  
 metadata = pd.read_csv(metadata_path, sep=",", encoding='latin-1')
 
 # Create pollution station and sensor nodes 

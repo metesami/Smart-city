@@ -4,13 +4,15 @@ import json, time, requests
 import pandas as pd
 from rdflib import Graph, Namespace, Literal, URIRef
 from rdflib.namespace import RDF, RDFS, XSD, DCTERMS
-import urllib.parse 
+import urllib.parse
 
-#  Namespaces 
+#  Namespaces
 EX      = Namespace("http://example.org/traffic/")
 CTDO    = Namespace("https://w3id.org/ctdo#")
 SOSA    = Namespace("http://www.w3.org/ns/sosa/")
 WGS84NS = Namespace("http://www.w3.org/2003/01/geo/wgs84_pos#")
+DCMITYPE = Namespace("http://purl.org/dc/dcmitype/")
+
 
 g = Graph()
 g.bind("ex", EX)
@@ -18,13 +20,13 @@ g.bind("ctdo", CTDO)
 g.bind("sosa", SOSA)
 g.bind("wgs84", WGS84NS)
 g.bind("geo",   WGS84NS)
-g.bind("dcterms", DCTERMS)  
+g.bind("dcterms", DCTERMS)
+g.bind("dcmitype", DCMITYPE)
 
-#  Config 
+#  Config
 OSM_NODE_API   = "https://api.openstreetmap.org/api/0.6/node/{nid}.json"
 file_path      = "/content/drive/MyDrive/Test ontology_A142/A142_L5_20230901_complete.csv"
 intersection_id = "A142"
-
 #  Helpers 
 def clean_osm_id(v):
     if v is None or (isinstance(v, float) and pd.isna(v)) or str(v).strip() == "":
@@ -60,7 +62,7 @@ def parse_bool(v):
     return None
 
 #  Load data 
-metadata_df = pd.read_csv(file_path)
+metadata_df = pd.read_csv(file_path,encoding='latin-1')
 
 #  Create intersection 
 intersection_uri = EX[f"intersection_{intersection_id}"]
@@ -190,11 +192,12 @@ for _, row in metadata_df.iterrows():
         sensor_uri_map[sid] = str(sensor_uri)
         sensor_to_lane_map[sid] = str(lane_uri)
 
+
 #  Dataset & save 
 dataset_uri = EX[f"dataset_intersection_{intersection_id}"]
-g.add((dataset_uri, RDF.type, DCTERMS.Dataset))  # <-- FIX 2: use bound class
+g.add((dataset_uri, RDF.type, DCMITYPE.Dataset))  
 g.add((dataset_uri, RDFS.label, Literal(f"Intersection {intersection_id} metadata", lang="en")))
-g.add((dataset_uri, DCTERMS.source, Literal(file_path)))  # <-- FIX 2: use dcterms:source
+g.add((dataset_uri, DCTERMS.source, Literal(file_path)))  
 
 SENSOR_MAP_JSON  = "/content/drive/MyDrive/Smart-city/sensor_uri_map.json"
 LANE_MAP_JSON    = "/content/drive/MyDrive/Smart-city/lane_uri_map.json"
