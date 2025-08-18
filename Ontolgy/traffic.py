@@ -1,42 +1,48 @@
 # pip install rdflib pandas
 
-import json
+import json, urllib.parse
 import pandas as pd
 from rdflib import Graph, Namespace, Literal, URIRef
 from rdflib.namespace import RDF, XSD
-import urllib.parse
 
-#  Namespaces 
+# --- Namespaces ---
 EX   = Namespace("http://example.org/traffic/")
 CTDO = Namespace("https://w3id.org/ctdo#")
 SOSA = Namespace("http://www.w3.org/ns/sosa/")
 TIME = Namespace("http://www.w3.org/2006/time#")
 
-#  Load URI maps created by the metadata script 
-sensor_uri_map = json.load(open("/content/sensor_uri_map.json"))
-lane_uri_map   = json.load(open("/content/lane_uri_map.json"))
+# --- Load URI maps from the SAME paths the metadata script wrote ---
+SENSOR_MAP_JSON  = "/content/drive/MyDrive/Smart-city/sensor_uri_map.json"
+LANE_MAP_JSON    = "/content/drive/MyDrive/Smart-city/lane_uri_map.json"
+SENSOR2LANE_JSON = "/content/drive/MyDrive/Smart-city/sensor_to_lane_map.json"
 
-
+sensor_uri_map = json.load(open(SENSOR_MAP_JSON))
+lane_uri_map   = json.load(open(LANE_MAP_JSON))
 try:
-    sensor_to_lane_map = json.load(open("/content/sensor_to_lane_map.json"))
+    sensor_to_lane_map = json.load(open(SENSOR2LANE_JSON))
 except Exception:
     sensor_to_lane_map = {}
 
-#  RDF graph 
+print("Loaded maps:",
+      "\n  sensors     :", len(sensor_uri_map),
+      "\n  lanes       :", len(lane_uri_map),
+      "\n  sensor→lane :", len(sensor_to_lane_map))
+
+# --- RDF graph ---
 g = Graph()
 g.bind("ex", EX)
 g.bind("ctdo", CTDO)
 g.bind("sosa", SOSA)
 g.bind("time", TIME)
 
-# Declare observable properties once
-VehicleCount       = EX.VehicleCount;g.add((VehicleCount, RDF.type, SOSA.ObservableProperty))
-AverageDwellTime   = EX.AverageDwellTime;g.add((AverageDwellTime, RDF.type, SOSA.ObservableProperty))
+# Observable properties
+VehicleCount     = EX.VehicleCount;     g.add((VehicleCount, RDF.type, SOSA.ObservableProperty))
+AverageDwellTime = EX.AverageDwellTime; g.add((AverageDwellTime, RDF.type, SOSA.ObservableProperty))
 
-#avoid re-adding same time Instant within run
+# avoid re-adding the same Instant
 time_inst_added = set()
 
-#  Load traffic CSV in chunks 
+# --- Load traffic CSV in chunks ---
 chunk_size = 400
 traffic_chunks = pd.read_csv(
     "/content/drive/MyDrive/Test ontology_A142/1 day A142 text.csv",
@@ -46,25 +52,25 @@ traffic_chunks = pd.read_csv(
 triples_to_add = []
 
 for chunk in traffic_chunks:
-    timestamps = chunk["Intervallbeginn (UTC)"]
+    timestamps       = chunk["Intervallbeginn (UTC)"]
     intersection_ids = chunk["Anlage"].astype(str).str.strip()
-    count_cols = [c for c in chunk.columns if "(Belegungen/Intervall)" in c]
+    count_cols       = [c for c in chunk.columns if "(Belegungen/Intervall)" in c]
 
     for ccol in count_cols:
         sid = ccol.split(" ")[0].strip()
         sensor_uri_str = sensor_uri_map.get(sid)
         if not sensor_uri_str:
+            # unknown sensor id — skip
             continue
         sensor_uri = URIRef(sensor_uri_str)
 
-        dwell_col = f"{sid} (Verweilzeit/Intervall) [ms]"
-        has_dwell = dwell_col in chunk.columns
+        dwell_col   = f"{sid} (Verweilzeit/Intervall) [ms]"
+        has_dwell   = dwell_col in chunk.columns
         count_series = chunk[ccol]
         dwell_series = chunk[dwell_col] if has_dwell else None
 
         for i in range(len(chunk)):
             count_val = count_series.iloc[i]
-            dwell_val = dwell_series.iloc[i]
 
             # Parse timestamp
             t_raw = str(timestamps.iloc[i])
@@ -78,23 +84,22 @@ for chunk in traffic_chunks:
             iso_t = t_dt.isoformat()
 
             # time:Instant node
-            t_key = urllib.parse.quote_plus(iso_t)
+            t_key  = urllib.parse.quote_plus(iso_t)
             t_inst = EX[f"t_{t_key}"]
             if t_key not in time_inst_added:
                 triples_to_add.append((t_inst, RDF.type, TIME.Instant))
                 triples_to_add.append((t_inst, TIME.inXSDDateTime, Literal(iso_t, datatype=XSD.dateTime)))
                 time_inst_added.add(t_key)
 
-
             # intersection
-            inter_id = intersection_ids.iloc[i]
+            inter_id         = intersection_ids.iloc[i]
             intersection_uri = EX[f"intersection_{inter_id}"]
 
-            # lane
+            # lane via sensor→lane map (if available)
             lane_uri_str = sensor_to_lane_map.get(sid)
-            lane_uri = URIRef(lane_uri_str) if lane_uri_str else None
+            lane_uri     = URIRef(lane_uri_str) if lane_uri_str else None
 
-            #  Vehicle Count Observation 
+            # Vehicle Count Observation
             obs_count = EX[f"obsCount_{sid}_{t_key}"]
             triples_to_add.append((obs_count, RDF.type, SOSA.Observation))
             triples_to_add.append((obs_count, SOSA.madeBySensor, sensor_uri))
@@ -105,23 +110,26 @@ for chunk in traffic_chunks:
             if lane_uri:
                 triples_to_add.append((obs_count, SOSA.hasFeatureOfInterest, lane_uri))
 
-            #  Average Dwell Time Observation 
-            obs_dwell = EX[f"obsDwell_{sid}_{t_key}"]
-            triples_to_add.append((obs_dwell, RDF.type, SOSA.Observation))
-            triples_to_add.append((obs_dwell, SOSA.madeBySensor, sensor_uri))
-            triples_to_add.append((obs_dwell, SOSA.observedProperty, AverageDwellTime))
-            triples_to_add.append((obs_dwell, SOSA.hasSimpleResult, Literal(float(dwell_val), datatype=XSD.double)))
-            triples_to_add.append((obs_dwell, SOSA.phenomenonTime, t_inst))
-            triples_to_add.append((obs_dwell, CTDO.belongsToIntersection, intersection_uri))
-            if lane_uri:
-                triples_to_add.append((obs_dwell, SOSA.hasFeatureOfInterest, lane_uri))
+            # Average Dwell Time Observation (only if column exists and value present)
+            if has_dwell:
+                dwell_val = dwell_series.iloc[i]
+                if pd.notna(dwell_val):
+                    obs_dwell = EX[f"obsDwell_{sid}_{t_key}"]
+                    triples_to_add.append((obs_dwell, RDF.type, SOSA.Observation))
+                    triples_to_add.append((obs_dwell, SOSA.madeBySensor, sensor_uri))
+                    triples_to_add.append((obs_dwell, SOSA.observedProperty, AverageDwellTime))
+                    triples_to_add.append((obs_dwell, SOSA.hasSimpleResult, Literal(float(dwell_val), datatype=XSD.double)))
+                    triples_to_add.append((obs_dwell, SOSA.phenomenonTime, t_inst))
+                    triples_to_add.append((obs_dwell, CTDO.belongsToIntersection, intersection_uri))
+                    if lane_uri:
+                        triples_to_add.append((obs_dwell, SOSA.hasFeatureOfInterest, lane_uri))
 
-    # Add all triples for this chunk
+    # flush this chunk
     for s, p, o in triples_to_add:
         g.add((s, p, o))
     triples_to_add.clear()
 
-#  Save 
+# --- Save ---
 output_path = "/content/A142_traffic_with_intersection.ttl"
 g.serialize(destination=output_path, format="turtle")
 print(f"✔️ RDF saved with intersection links: {len(g)} triples")

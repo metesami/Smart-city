@@ -1,33 +1,32 @@
 # pip install rdflib pandas requests
 
-import json, time, requests
+import json, time, requests, urllib.parse
 import pandas as pd
 from rdflib import Graph, Namespace, Literal, URIRef
 from rdflib.namespace import RDF, RDFS, XSD, DCTERMS
-import urllib.parse
 
-#  Namespaces
-EX      = Namespace("http://example.org/traffic/")
-CTDO    = Namespace("https://w3id.org/ctdo#")
-SOSA    = Namespace("http://www.w3.org/ns/sosa/")
-WGS84NS = Namespace("http://www.w3.org/2003/01/geo/wgs84_pos#")
+# --- Namespaces ---
+EX       = Namespace("http://example.org/traffic/")
+CTDO     = Namespace("https://w3id.org/ctdo#")
+SOSA     = Namespace("http://www.w3.org/ns/sosa/")
+WGS84NS  = Namespace("http://www.w3.org/2003/01/geo/wgs84_pos#")
 DCMITYPE = Namespace("http://purl.org/dc/dcmitype/")
-
 
 g = Graph()
 g.bind("ex", EX)
 g.bind("ctdo", CTDO)
 g.bind("sosa", SOSA)
 g.bind("wgs84", WGS84NS)
-g.bind("geo",   WGS84NS)
+g.bind("geo",   WGS84NS)   # alias
 g.bind("dcterms", DCTERMS)
 g.bind("dcmitype", DCMITYPE)
 
-#  Config
-OSM_NODE_API   = "https://api.openstreetmap.org/api/0.6/node/{nid}.json"
-file_path      = "/content/drive/MyDrive/Test ontology_A142/A142_L5_20230901_complete.csv"
+# --- Config ---
+OSM_NODE_API    = "https://api.openstreetmap.org/api/0.6/node/{nid}.json"
+file_path       = "/content/drive/MyDrive/Test ontology_A142/A142_L5_20230901_complete.csv"
 intersection_id = "A142"
-#  Helpers 
+
+# --- Helpers ---
 def clean_osm_id(v):
     if v is None or (isinstance(v, float) and pd.isna(v)) or str(v).strip() == "":
         return None
@@ -41,7 +40,7 @@ def clean_osm_id(v):
 def fetch_node_latlon(node_id, session=None, timeout=25):
     url = OSM_NODE_API.format(nid=int(node_id))
     s = session or requests.Session()
-    headers = {"User-Agent": "SmartCity-KG/1.0 (contact: mohammad.etesami@h-da.de)"}
+    headers = {"User-Agent": "SmartCity-KG/1.0 (contact: you@example.org)"}
     r = s.get(url, timeout=timeout, headers=headers)
     r.raise_for_status()
     js = r.json()
@@ -61,17 +60,21 @@ def parse_bool(v):
     if s in false_set: return False
     return None
 
-#  Load data 
-metadata_df = pd.read_csv(file_path,encoding='latin-1')
+# --- Load data ---
+# try utf-8 first; fall back to latin-1 if needed
+try:
+    metadata_df = pd.read_csv(file_path)
+except UnicodeDecodeError:
+    metadata_df = pd.read_csv(file_path, encoding="latin-1")
 
-#  Create intersection 
+# --- Create intersection ---
 intersection_uri = EX[f"intersection_{intersection_id}"]
 g.add((intersection_uri, RDF.type, CTDO.Intersection))
-g.add((intersection_uri, RDFS.label, Literal(f"Intersection {intersection_id}")))
+g.add((intersection_uri, RDFS.label, Literal(f"Intersection {intersection_id}", lang="en")))
 
-#  Fetch unique node coords for intersection & attach 
-session   = requests.Session()
-node_cache = {}  # osm_node_id (str) -> (lat, lon)
+# --- Fetch unique node coords for intersection & attach ---
+session    = requests.Session()
+node_cache = {}
 node_ids   = set()
 
 if "osm_node_id" in metadata_df.columns:
@@ -80,7 +83,6 @@ if "osm_node_id" in metadata_df.columns:
         if nid:
             node_ids.add(nid)
 
-coords = []
 for nid in sorted(node_ids):
     if nid in node_cache:
         latlon = node_cache[nid]
@@ -94,11 +96,10 @@ for nid in sorted(node_ids):
     if not latlon:
         continue
     lat, lon = latlon
-    coords.append((lat, lon))
     g.add((intersection_uri, WGS84NS.lat,  Literal(lat, datatype=XSD.decimal)))
     g.add((intersection_uri, WGS84NS.long, Literal(lon, datatype=XSD.decimal)))
 
-#  Streets, Lanes, Sensors 
+# --- Streets, Lanes, Sensors ---
 sensor_uri_map     = {}
 street_uri_map     = {}
 lane_uri_map       = {}
@@ -111,8 +112,8 @@ for _, row in metadata_df.iterrows():
     if pd.isna(way_v) or str(way_v).strip() == "":
         continue
 
-    way_id       = clean_osm_id(way_v)      # keep as string
-    osm_node_id  = clean_osm_id(node_v)     # keep as string
+    way_id       = clean_osm_id(way_v)      # strings
+    osm_node_id  = clean_osm_id(node_v)     # strings
     lane_index   = row.get("lane_index(0-based from left to right)", None)
     turn_dir     = row.get("turn_direction", None)
     det_type     = row.get("detector_type", None)
@@ -137,17 +138,16 @@ for _, row in metadata_df.iterrows():
         g.add((intersection_uri, CTDO.hasStreet, street_uri))
         g.add((street_uri, CTDO.connectsToIntersection, intersection_uri))
 
+        # Attach street-level coords via its node (optional)
         if osm_node_id:
-            if osm_node_id in node_cache:
-                latlon = node_cache[osm_node_id]
-            else:
+            latlon = node_cache.get(osm_node_id)
+            if latlon is None:
                 try:
                     latlon = fetch_node_latlon(osm_node_id, session=session)
                     node_cache[osm_node_id] = latlon
                     time.sleep(0.4)
                 except Exception:
                     latlon = None
-
             if latlon:
                 lat, lon = latlon
                 g.add((street_uri, WGS84NS.lat,  Literal(lat, datatype=XSD.decimal)))
@@ -155,7 +155,7 @@ for _, row in metadata_df.iterrows():
     else:
         street_uri = street_uri_map[way_id]
 
-    # Lane 
+    # Lane
     lane_uri = EX[f"lane_{intersection_id}_{way_id}_{lane_index}"]
     g.add((lane_uri, RDF.type, CTDO.Lane))
     if lane_index is not None and not pd.isna(lane_index):
@@ -192,16 +192,16 @@ for _, row in metadata_df.iterrows():
         sensor_uri_map[sid] = str(sensor_uri)
         sensor_to_lane_map[sid] = str(lane_uri)
 
-
-#  Dataset & save 
+# --- Dataset metadata & save maps ---
 dataset_uri = EX[f"dataset_intersection_{intersection_id}"]
-g.add((dataset_uri, RDF.type, DCMITYPE.Dataset))  
+g.add((dataset_uri, RDF.type, DCMITYPE.Dataset))
 g.add((dataset_uri, RDFS.label, Literal(f"Intersection {intersection_id} metadata", lang="en")))
-g.add((dataset_uri, DCTERMS.source, Literal(file_path)))  
+g.add((dataset_uri, DCTERMS.source, Literal(file_path)))
 
 SENSOR_MAP_JSON  = "/content/drive/MyDrive/Smart-city/sensor_uri_map.json"
 LANE_MAP_JSON    = "/content/drive/MyDrive/Smart-city/lane_uri_map.json"
 SENSOR2LANE_JSON = "/content/drive/MyDrive/Smart-city/sensor_to_lane_map.json"
+
 with open(SENSOR_MAP_JSON, "w") as f:
     json.dump(sensor_uri_map, f, ensure_ascii=False, indent=2)
 with open(LANE_MAP_JSON, "w") as f:
@@ -211,4 +211,8 @@ with open(SENSOR2LANE_JSON, "w") as f:
 
 output_path = "/content/drive/MyDrive/Smart-city/A142_intersection_ontology.ttl"
 g.serialize(destination=output_path, format="turtle")
-print(f"✅ Done! Total triples in intersection ontology: {len(g)}")
+print("✅ Done! Triples:", len(g))
+print("JSON maps written:",
+      "\n  sensors     :", len(sensor_uri_map),
+      "\n  lanes       :", len(lane_uri_map),
+      "\n  sensor→lane :", len(sensor_to_lane_map))
