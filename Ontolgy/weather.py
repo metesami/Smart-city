@@ -58,11 +58,10 @@ for chunk in weather_chunks:
 
     for _, row in chunk.iterrows():
         # timestamp
-        ts0 = pd.to_datetime(str(row.get("datetime")), errors="coerce")
-        if pd.isna(ts0):
+        ts0 = pd.to_datetime(str(row["datetime"]), errors="coerce")
+        if pd.isna(ts0): 
             continue
-        # convert to UTC by subtracting 1 hour, then assign UTC tz
-        ts = (ts0 - pd.Timedelta(hours=1)).tz_localize("UTC")
+        ts = ts0.tz_localize("UTC")
         iso_t = ts.isoformat()
         tkey  = urllib.parse.quote_plus(iso_t)
         tinst = EX[f"t_{tkey}"]
