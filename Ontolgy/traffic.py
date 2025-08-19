@@ -72,16 +72,19 @@ for chunk in traffic_chunks:
         for i in range(len(chunk)):
             count_val = count_series.iloc[i]
 
-            # Parse timestamp
+            # Parse timestamp (source column is UTC)
             t_raw = str(timestamps.iloc[i])
             try:
-                t_dt = pd.to_datetime(t_raw, format="%d.%m.%Y %H:%M:%S")
+                # explicit UTC, timezone-aware
+                t_dt = pd.to_datetime(t_raw, format="%d.%m.%Y %H:%M:%S", utc=True)
             except Exception:
                 try:
-                    t_dt = pd.to_datetime(t_raw)
+                    t_dt = pd.to_datetime(t_raw, utc=True)  # fallback parser
                 except Exception:
                     continue
-            iso_t = t_dt.isoformat()
+
+            iso_t = t_dt.isoformat()  # e.g., "2022-02-01T00:00:00+00:00"
+
 
             # time:Instant node
             t_key  = urllib.parse.quote_plus(iso_t)
@@ -130,6 +133,6 @@ for chunk in traffic_chunks:
     triples_to_add.clear()
 
 # --- Save ---
-output_path = "/content/A142_traffic_with_intersection.ttl"
+output_path = "/content/drive/MyDrive/Smart-city/A142_traffic_with_intersection.ttl"
 g.serialize(destination=output_path, format="turtle")
 print(f"✔️ RDF saved with intersection links: {len(g)} triples")
