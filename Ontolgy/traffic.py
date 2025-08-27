@@ -7,7 +7,9 @@ from rdflib.namespace import RDF, XSD
 
 # --- Namespaces ---
 EX   = Namespace("http://example.org/traffic/")
-CTDO = Namespace("https://w3id.org/ctdo#")
+SC     = Namespace("http://example.org/smartcity/core#")
+TRAFFIC  = Namespace("http://example.org/smartcity/traffic#")
+GEO    = Namespace("http://www.opengis.net/ont/geosparql#")
 SOSA = Namespace("http://www.w3.org/ns/sosa/")
 TIME = Namespace("http://www.w3.org/2006/time#")
 
@@ -31,13 +33,11 @@ print("Loaded maps:",
 # --- RDF graph ---
 g = Graph()
 g.bind("ex", EX)
-g.bind("ctdo", CTDO)
+g.bind("sc",    SC)
+g.bind("traffic", TRAFFIC)
+g.bind("geo",   GEO) 
 g.bind("sosa", SOSA)
 g.bind("time", TIME)
-
-# Observable properties
-VehicleCount     = EX.VehicleCount;     g.add((VehicleCount, RDF.type, SOSA.ObservableProperty))
-AverageDwellTime = EX.AverageDwellTime; g.add((AverageDwellTime, RDF.type, SOSA.ObservableProperty))
 
 # avoid re-adding the same Instant
 time_inst_added = set()
@@ -104,12 +104,11 @@ for chunk in traffic_chunks:
 
             # Vehicle Count Observation
             obs_count = EX[f"obsCount_{sid}_{t_key}"]
-            triples_to_add.append((obs_count, RDF.type, SOSA.Observation))
+            triples_to_add.append((obs_count, RDF.type, SC.Observation))
             triples_to_add.append((obs_count, SOSA.madeBySensor, sensor_uri))
-            triples_to_add.append((obs_count, SOSA.observedProperty, VehicleCount))
+            triples_to_add.append((obs_count, SOSA.observedProperty, TRAFFIC.VehicleCount))
             triples_to_add.append((obs_count, SOSA.hasSimpleResult, Literal(int(count_val), datatype=XSD.integer)))
             triples_to_add.append((obs_count, SOSA.phenomenonTime, t_inst))
-            triples_to_add.append((obs_count, CTDO.belongsToIntersection, intersection_uri))
             if lane_uri:
                 triples_to_add.append((obs_count, SOSA.hasFeatureOfInterest, lane_uri))
 
@@ -118,12 +117,11 @@ for chunk in traffic_chunks:
                 dwell_val = dwell_series.iloc[i]
                 if pd.notna(dwell_val):
                     obs_dwell = EX[f"obsDwell_{sid}_{t_key}"]
-                    triples_to_add.append((obs_dwell, RDF.type, SOSA.Observation))
+                    triples_to_add.append((obs_dwell, RDF.type, SC.Observation))
                     triples_to_add.append((obs_dwell, SOSA.madeBySensor, sensor_uri))
-                    triples_to_add.append((obs_dwell, SOSA.observedProperty, AverageDwellTime))
+                    triples_to_add.append((obs_dwell, SOSA.observedProperty, TRAFFIC.AverageDwellTime))
                     triples_to_add.append((obs_dwell, SOSA.hasSimpleResult, Literal(float(dwell_val), datatype=XSD.double)))
                     triples_to_add.append((obs_dwell, SOSA.phenomenonTime, t_inst))
-                    triples_to_add.append((obs_dwell, CTDO.belongsToIntersection, intersection_uri))
                     if lane_uri:
                         triples_to_add.append((obs_dwell, SOSA.hasFeatureOfInterest, lane_uri))
 

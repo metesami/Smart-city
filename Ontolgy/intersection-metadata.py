@@ -7,19 +7,20 @@ from rdflib.namespace import RDF, RDFS, XSD, DCTERMS
 
 # --- Namespaces ---
 EX       = Namespace("http://example.org/traffic/")
-CTDO     = Namespace("https://w3id.org/ctdo#")
 SOSA     = Namespace("http://www.w3.org/ns/sosa/")
-WGS84NS  = Namespace("http://www.w3.org/2003/01/geo/wgs84_pos#")
 DCMITYPE = Namespace("http://purl.org/dc/dcmitype/")
+SC     = Namespace("http://example.org/smartcity/core#")
+TRAFFIC  = Namespace("http://example.org/smartcity/traffic#")
+GEO    = Namespace("http://www.opengis.net/ont/geosparql#")
 
 g = Graph()
 g.bind("ex", EX)
-g.bind("ctdo", CTDO)
 g.bind("sosa", SOSA)
-g.bind("wgs84", WGS84NS)
-g.bind("geo",   WGS84NS)   # alias
 g.bind("dcterms", DCTERMS)
 g.bind("dcmitype", DCMITYPE)
+g.bind("sc", SC)
+g.bind("traffic", TRAFFIC)
+g.bind("geo", GEO) 
 
 # --- Config ---
 OSM_NODE_API    = "https://api.openstreetmap.org/api/0.6/node/{nid}.json"
@@ -50,6 +51,17 @@ def fetch_node_latlon(node_id, session=None, timeout=25):
     el = els[0]
     return float(el["lat"]), float(el["lon"])
 
+def attach_point_geometry(subject_uri, lat, lon):
+
+    # Create a geometry blank node/URI and attach POINT(lon lat) as WKT.
+ 
+    geom = URIRef(str(subject_uri) + "_geom")
+    wkt  = f"POINT({lon} {lat})"        # WKT uses lon first, then lat
+    g.add((subject_uri, GEO.hasGeometry, geom))
+    g.add((geom, RDF.type, GEO.Geometry))
+    g.add((geom, GEO.asWKT, Literal(wkt, datatype=GEO.wktLiteral)))
+
+
 def parse_bool(v):
     if v is None or (isinstance(v, float) and pd.isna(v)):
         return None
@@ -69,7 +81,7 @@ except UnicodeDecodeError:
 
 # --- Create intersection ---
 intersection_uri = EX[f"intersection_{intersection_id}"]
-g.add((intersection_uri, RDF.type, CTDO.Intersection))
+g.add((intersection_uri, RDF.type, TRAFFIC.Intersection))
 g.add((intersection_uri, RDFS.label, Literal(f"Intersection {intersection_id}", lang="en")))
 
 # --- Fetch unique node coords for intersection & attach ---
@@ -96,8 +108,7 @@ for nid in sorted(node_ids):
     if not latlon:
         continue
     lat, lon = latlon
-    g.add((intersection_uri, WGS84NS.lat,  Literal(lat, datatype=XSD.decimal)))
-    g.add((intersection_uri, WGS84NS.long, Literal(lon, datatype=XSD.decimal)))
+    attach_point_geometry(intersection_uri, lat, lon)
 
 # --- Streets, Lanes, Sensors ---
 sensor_uri_map     = {}
@@ -128,17 +139,17 @@ for _, row in metadata_df.iterrows():
         street_uri = EX[f"way_{urllib.parse.quote_plus(way_id)}"]
         street_uri_map[way_id] = street_uri
 
-        g.add((street_uri, RDF.type, CTDO.Street))
-        g.add((street_uri, CTDO.wayId,     Literal(way_id, datatype=XSD.string)))
+        g.add((street_uri, RDF.type, TRAFFIC.Street))
+        g.add((street_uri, TRAFFIC.osmWayId,     Literal(way_id, datatype=XSD.string)))
         if osm_node_id:
-            g.add((street_uri, CTDO.osmNodeId, Literal(osm_node_id, datatype=XSD.string)))
+            g.add((street_uri, TRAFFIC.osmNodeId, Literal(osm_node_id, datatype=XSD.string)))
         if road_name:
             g.add((street_uri, RDFS.label, Literal(road_name, lang="de")))
 
-        g.add((intersection_uri, CTDO.hasStreet, street_uri))
-        g.add((street_uri, CTDO.connectsToIntersection, intersection_uri))
+        g.add((intersection_uri, TRAFFIC.hasStreet, street_uri))
+        g.add((street_uri, TRAFFIC.streetOf, intersection_uri))
 
-        # Attach street-level coords via its node (optional)
+        # Attach street-level coords via its node 
         if osm_node_id:
             latlon = node_cache.get(osm_node_id)
             if latlon is None:
@@ -150,44 +161,42 @@ for _, row in metadata_df.iterrows():
                     latlon = None
             if latlon:
                 lat, lon = latlon
-                g.add((street_uri, WGS84NS.lat,  Literal(lat, datatype=XSD.decimal)))
-                g.add((street_uri, WGS84NS.long, Literal(lon, datatype=XSD.decimal)))
+                attach_point_geometry(street_uri, lat, lon)
     else:
         street_uri = street_uri_map[way_id]
 
     # Lane
     lane_uri = EX[f"lane_{intersection_id}_{way_id}_{lane_index}"]
-    g.add((lane_uri, RDF.type, CTDO.Lane))
+    g.add((lane_uri, RDF.type, TRAFFIC.Lane))
     if lane_index is not None and not pd.isna(lane_index):
-        g.add((lane_uri, CTDO.laneIndex, Literal(int(lane_index), datatype=XSD.integer)))
+        g.add((lane_uri, TRAFFIC.laneIndex, Literal(int(lane_index), datatype=XSD.integer)))
     if turn_dir:
-        g.add((lane_uri, CTDO.turnDirection, Literal(str(turn_dir))))
+        g.add((lane_uri, TRAFFIC.turnDirection, Literal(str(turn_dir))))
     if osm_node_id:
-        g.add((lane_uri, CTDO.osmNodeId, Literal(osm_node_id, datatype=XSD.string)))
+        g.add((lane_uri, TRAFFIC.osmNodeId, Literal(osm_node_id, datatype=XSD.string)))
 
     val = parse_bool(bicycle_lane)
     if val is not None:
-        g.add((lane_uri, CTDO.bicycleDedicatedLane, Literal(val, datatype=XSD.boolean)))
+        g.add((lane_uri, TRAFFIC.bicycleDedicatedLane, Literal(val, datatype=XSD.boolean)))
 
-    g.add((lane_uri, CTDO.belongsToStreet, street_uri))
-    g.add((lane_uri, CTDO.atIntersection, intersection_uri))
+    g.add((lane_uri, TRAFFIC.isLaneOf, street_uri))
+    g.add((lane_uri, TRAFFIC.laneBelongsToIntersection, intersection_uri))
     lane_uri_map[f"{intersection_id}:{way_id}:{lane_index}"] = str(lane_uri)
 
     # Sensor
     if sid:
         sensor_uri = EX[f"sensor_{urllib.parse.quote_plus(sid)}"]
-        g.add((sensor_uri, RDF.type, SOSA.Sensor))
-        g.add((sensor_uri, RDF.type, CTDO.TrafficSensor))
-        g.add((sensor_uri, CTDO.hasSensorId, Literal(sid)))
+        g.add((sensor_uri, RDF.type, TRAFFIC.TrafficSensor))
+        g.add((sensor_uri, TRAFFIC.sensorId, Literal(sid)))
         if det_type and not pd.isna(det_type):
-            g.add((sensor_uri, CTDO.detectorType, Literal(str(det_type))))
+            g.add((sensor_uri, TRAFFIC.detectorType, Literal(str(det_type))))
         if det_range is not None and not pd.isna(det_range):
-            g.add((sensor_uri, CTDO.detectionRange, Literal(float(det_range), datatype=XSD.float)))
+            g.add((sensor_uri, TRAFFIC.detectionRange, Literal(float(det_range), datatype=XSD.float)))
         if dist_stop is not None and not pd.isna(dist_stop):
-            g.add((sensor_uri, CTDO.distanceToStopline, Literal(float(dist_stop), datatype=XSD.float)))
+            g.add((sensor_uri, TRAFFIC.distanceToStopline, Literal(float(dist_stop), datatype=XSD.float)))
         if conn_roads and not pd.isna(conn_roads):
-            g.add((sensor_uri, CTDO.connectedRoads, Literal(str(conn_roads))))
-        g.add((sensor_uri, CTDO.detectsTrafficOn, lane_uri))
+            g.add((sensor_uri, TRAFFIC.connectedRoads, Literal(str(conn_roads))))
+        g.add((sensor_uri, TRAFFIC.detectsTrafficOn, lane_uri))
 
         sensor_uri_map[sid] = str(sensor_uri)
         sensor_to_lane_map[sid] = str(lane_uri)

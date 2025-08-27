@@ -5,20 +5,16 @@ from rdflib.namespace import RDF, RDFS, XSD
 # Setup RDF Graph and Namespaces 
 g = Graph()
 EX    = Namespace("http://example.org/pollution/")  
-POLL  = Namespace("https://w3id.org/airpollution#") 
+POLLUTION  = Namespace("http://example.org/smartcity/pollution#") 
 SOSA  = Namespace("http://www.w3.org/ns/sosa/")
 TIME  = Namespace("http://www.w3.org/2006/time#")
-WGS84 = Namespace("http://www.w3.org/2003/01/geo/wgs84_pos#")
+GEO    = Namespace("http://www.opengis.net/ont/geosparql#")
 QUDT  = Namespace("http://qudt.org/schema/qudt/")
 UNIT  = Namespace("http://qudt.org/vocab/unit/")
 
-g.bind("ex", EX); g.bind("poll", POLL); g.bind("sosa", SOSA)
-g.bind("time", TIME); g.bind("wgs84", WGS84); g.bind("qudt", QUDT); g.bind("unit", UNIT)
+g.bind("ex", EX); g.bind("pollution", POLLUTION); g.bind("sosa", SOSA)
+g.bind("time", TIME); g.bind("geo", GEO); g.bind("qudt", QUDT); g.bind("unit", UNIT)
 
-# Properties
-NO2   = EX.NO2;    g.add((NO2,   RDF.type, SOSA.ObservableProperty))
-PM10  = EX.PM10;   g.add((PM10,  RDF.type, SOSA.ObservableProperty))
-PM25  = EX.PM2_5;  g.add((PM25,  RDF.type, SOSA.ObservableProperty))
 
 # Metadata for pollution stations 
 metadata_path = "/content/drive/MyDrive/Test ontology_A142/Pollution/pollution_stations_metadata.csv"  
@@ -34,19 +30,29 @@ for _, row in metadata.iterrows():
     sens  = EX[f"sensor_{sid}"]    # a generic sensor hosted at that station
     station_uri_map[sid] = str(platform); sensor_uri_map[sid] = str(sens)
 
-    g.add((platform, RDF.type, SOSA.Platform))
+    g.add((platform, RDF.type, POLLUTION.PollutionPlatform))
     g.add((platform, RDFS.label, Literal(row.get("address","").strip() or f"Station {sid}")))
     # coords
+  
     if pd.notna(row.get("latitude")) and pd.notna(row.get("longitude")):
-        g.add((platform, WGS84.lat,  Literal(float(row["latitude"]),  datatype=XSD.decimal)))
-        g.add((platform, WGS84.long, Literal(float(row["longitude"]), datatype=XSD.decimal)))
+        lat = float(row["latitude"])
+        lon = float(row["longitude"])
+
+        geom = EX[f"geom_station_{sid}"]  # a URI for the geometry node
+        g.add((platform, GEO.hasGeometry, geom))
+
+        # WKT uses lon lat 
+        wkt = f"POINT({lon} {lat})"
+        g.add((geom, RDF.type, GEO.Geometry))
+        g.add((geom, GEO.asWKT, Literal(wkt, datatype=GEO.wktLiteral)))
     # optional identifiers
-    g.add((platform, EX.stationId, Literal(sid)))
+    g.add((platform, POLLUTION.stationId, Literal(sid)))
     if pd.notna(row.get("OSM_ID")):
-        g.add((platform, EX.osmId, Literal(str(row["OSM_ID"]))))
+        g.add((platform, POLLUTION.osmNodeId, Literal(str(row["OSM_ID"]))))
+        
 
     # sensor hosted by the platform
-    g.add((sens, RDF.type, SOSA.Sensor))
+    g.add((sens, RDF.type, POLLUTION.PollutionSensor))
     g.add((sens, SOSA.isHostedBy, platform))
     g.add((platform, SOSA.hosts, sens))
 
@@ -91,8 +97,8 @@ for chunk in pollution_chunks:
             oname = str(prop_uri).split("/")[-1]
             obs   = EX[f"obs_{sid}_{tkey}_{oname}"]
             triples.extend([
+                (obs, RDF.type, POLLUTION.PollutionObservation),
                 (obs, RDF.type, SOSA.Observation),
-                (obs, RDF.type, POLL.PollutionObservation), # custom type for pollution
                 (obs, SOSA.madeBySensor, sens),
                 (obs, SOSA.observedProperty, prop_uri),
                 (obs, SOSA.hasSimpleResult, Literal(val, datatype=XSD.double)),
@@ -105,13 +111,13 @@ for chunk in pollution_chunks:
 
         # values + units (µg/m³ typical)
         if pd.notna(row.get("NO2")):
-            add_obs(NO2,  float(row["NO2"]),  UNIT["MicroGM-PER-M3"])
+            add_obs(POLLUTION.NO2,  float(row["NO2"]),  UNIT["MicroGM-PER-M3"])
         if pd.notna(row.get("PM10")):
-            add_obs(PM10, float(row["PM10"]), UNIT["MicroGM-PER-M3"])
+            add_obs(POLLUTION.PM10, float(row["PM10"]), UNIT["MicroGM-PER-M3"])
         # note: CSV may have "PM2.5" column name
         pm25_col = "PM2.5" if "PM2.5" in row.index else "PM2_5"
         if pd.notna(row.get(pm25_col)):
-            add_obs(PM25, float(row[pm25_col]), UNIT["MicroGM-PER-M3"])
+            add_obs(POLLUTION.PM2_5, float(row[pm25_col]), UNIT["MicroGM-PER-M3"])
 
     for t in triples:
         g.add(t)
