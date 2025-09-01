@@ -140,12 +140,13 @@ for _, row in metadata_df.iterrows():
         street_uri_map[way_id] = street_uri
 
         g.add((street_uri, RDF.type, TRAFFIC.Street))
-        g.add((street_uri, TRAFFIC.osmWayId,     Literal(way_id, datatype=XSD.string)))
+        g.add((street_uri, TRAFFIC.osmWayId,     Literal(way_id, datatype=XSD.long)))
         if osm_node_id:
-            g.add((street_uri, TRAFFIC.osmNodeId, Literal(osm_node_id, datatype=XSD.string)))
+            g.add((street_uri, TRAFFIC.osmNodeId, Literal(osm_node_id, datatype=XSD.long)))
         if road_name:
             g.add((street_uri, RDFS.label, Literal(road_name, lang="de")))
 
+        g.add((intersection_uri, TRAFFIC.intersectionId, Literal(intersection_id,datatype=XSD.string)))
         g.add((intersection_uri, TRAFFIC.hasStreet, street_uri))
         g.add((street_uri, TRAFFIC.streetOf, intersection_uri))
 
