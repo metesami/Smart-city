@@ -1,4 +1,5 @@
 import pandas as pd, urllib.parse, json
+from decimal import Decimal, InvalidOperation
 from rdflib import Graph, Namespace, Literal, URIRef
 from rdflib.namespace import RDF, RDFS, XSD
 
@@ -35,8 +36,8 @@ for _, row in metadata.iterrows():
     # coords
   
     if pd.notna(row.get("latitude")) and pd.notna(row.get("longitude")):
-        lat = float(row["latitude"])
-        lon = float(row["longitude"])
+        lat = Decimal(row["latitude"])
+        lon = Decimal(row["longitude"])
 
         geom = EX[f"geom_station_{sid}"]  # a URI for the geometry node
         g.add((platform, GEO.hasGeometry, geom))
@@ -45,10 +46,12 @@ for _, row in metadata.iterrows():
         wkt = f"POINT({lon} {lat})"
         g.add((geom, RDF.type, GEO.Geometry))
         g.add((geom, GEO.asWKT, Literal(wkt, datatype=GEO.wktLiteral)))
+        g.add((platform, POLLUTION.stationLatitude,  Literal(lat, datatype=XSD.decimal)))
+        g.add((platform, POLLUTION.stationLongitude, Literal(lon, datatype=XSD.decimal)))
     # optional identifiers
     g.add((platform, POLLUTION.stationId, Literal(sid)))
-    if pd.notna(row.get("OSM_ID")):
-        g.add((platform, POLLUTION.osmNodeId, Literal(str(row["OSM_ID"]))))
+    osm_id = int(row["OSM_ID"])
+    g.add((platform, POLLUTION.osmNodeId, Literal(osm_id, datatype=XSD.long)))
         
 
     # sensor hosted by the platform
