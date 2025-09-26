@@ -104,7 +104,8 @@ for chunk in traffic_chunks:
 
             # Vehicle Count Observation
             obs_count = EX[f"obsCount_{sid}_{t_key}"]
-            triples_to_add.append((obs_count, RDF.type, SC.Observation))
+            triples_to_add.append((obs_count, RDF.type, SOSA.Observation))
+            triples_to_add.append((obs_count, RDF.type, TRAFFIC.TrafficObservation))
             triples_to_add.append((obs_count, SOSA.madeBySensor, sensor_uri))
             triples_to_add.append((obs_count, SOSA.observedProperty, TRAFFIC.VehicleCount))
             triples_to_add.append((obs_count, SOSA.hasSimpleResult, Literal(int(count_val), datatype=XSD.integer)))
@@ -118,6 +119,7 @@ for chunk in traffic_chunks:
                 if pd.notna(dwell_val):
                     obs_dwell = EX[f"obsDwell_{sid}_{t_key}"]
                     triples_to_add.append((obs_dwell, RDF.type, SC.Observation))
+                    triples_to_add.append((obs_dwell, RDF.type, TRAFFIC.TrafficObservation))
                     triples_to_add.append((obs_dwell, SOSA.madeBySensor, sensor_uri))
                     triples_to_add.append((obs_dwell, SOSA.observedProperty, TRAFFIC.AverageDwellTime))
                     triples_to_add.append((obs_dwell, SOSA.hasSimpleResult, Literal(float(dwell_val), datatype=XSD.double)))
