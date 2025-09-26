@@ -76,9 +76,7 @@ for chunk in pollution_chunks:
     triples = []
     for _, row in chunk.iterrows():
         # time
-        ts0 = pd.to_datetime(str(row["datetime"]), errors="coerce")
-        if pd.isna(ts0): 
-            continue
+        ts = pd.to_datetime(str(row["datetime"]), utc=True, errors="coerce")
         ts = ts0.tz_localize("UTC")
         iso_t = ts.isoformat()
         tkey  = urllib.parse.quote_plus(iso_t)
