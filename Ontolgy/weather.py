@@ -44,7 +44,7 @@ time_inst_added = set()
 
 
 #  3. Process Weather Data in Chunks 
-weather_chunks = pd.read_csv(file_path, sep=";", chunksize=chunk_size)
+weather_chunks = pd.read_csv(file_path, sep=",", chunksize=chunk_size)
 
 for chunk in weather_chunks:
 
@@ -52,10 +52,7 @@ for chunk in weather_chunks:
 
     for _, row in chunk.iterrows():
         # timestamp
-        ts0 = pd.to_datetime(str(row["datetime"]), errors="coerce")
-        if pd.isna(ts0): 
-            continue
-        ts = ts0.tz_localize("UTC")
+        ts = pd.to_datetime(str(row["datetime"]), utc=True, errors="coerce")
         iso_t = ts.isoformat()
         tkey  = urllib.parse.quote_plus(iso_t)
         tinst = EX[f"t_{tkey}"]

@@ -77,7 +77,6 @@ for chunk in pollution_chunks:
     for _, row in chunk.iterrows():
         # time
         ts = pd.to_datetime(str(row["datetime"]), utc=True, errors="coerce")
-        ts = ts0.tz_localize("UTC")
         iso_t = ts.isoformat()
         tkey  = urllib.parse.quote_plus(iso_t)
         tinst = EX[f"t_{tkey}"]
