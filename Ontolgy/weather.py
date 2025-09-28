@@ -36,7 +36,7 @@ g.add((geom, GEO.asWKT, Literal(f"POINT({lon} {lat})", datatype=GEO.wktLiteral))
 
 
 #  2. Define File Path and Chunksize 
-file_path = '/content/drive/MyDrive/Test ontology_A142/1 day weather.csv'
+file_path = '/content/drive/MyDrive/Test ontology_A142/10 min Interval Datasets/weather_10min.csv'
 chunk_size = 1000  # Adjust based on size and memory
 
 # avoid re-adding same Instant within run
@@ -98,4 +98,4 @@ for chunk in weather_chunks:
 
 #  5. Save to Turtle File 
 g.serialize(destination="/content/drive/MyDrive/Smart-city/A142_weather_ontology.ttl", format="turtle")
-print(f"✅ Done! Total triples in weather ontology: {len(g)}")
+print(f" Done! Total triples in weather ontology: {len(g)}")

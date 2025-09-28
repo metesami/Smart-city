@@ -62,7 +62,7 @@ for _, row in metadata.iterrows():
 # Time cache to avoid duplicates
 time_inst_added = set()
 # Load pollution data in chunks 
-file_path = "/content/drive/MyDrive/Test ontology_A142/1 day pollution.csv"  # Correct path
+file_path = "/content/drive/MyDrive/Test ontology_A142/10 min Interval Datasets/pollution_10min.csv"  # Correct path
 chunk_size = 500
 # Add encoding parameter to handle potential decoding issues for the pollution data file as well
 pollution_chunks = pd.read_csv(file_path, sep=",", chunksize=chunk_size, decimal=',',encoding='latin-1')
@@ -125,4 +125,4 @@ for chunk in pollution_chunks:
 # Save output 
 output_path = "/content/drive/MyDrive/Smart-city/A142_pollution_ontology.ttl"
 g.serialize(destination=output_path, format="turtle")
-print(f"✅ Done! Total triples in pollution ontology: {len(g)}")
+print(f" Done! Total triples in pollution ontology: {len(g)}")

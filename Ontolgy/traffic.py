@@ -45,7 +45,7 @@ time_inst_added = set()
 # --- Load traffic CSV in chunks ---
 chunk_size = 400
 traffic_chunks = pd.read_csv(
-    "/content/drive/MyDrive/Test ontology_A142/1 day A142 text.csv",
+    "/content/drive/MyDrive/Test ontology_A142/10 min Interval Datasets/A142_traffic_10min.csv",
     chunksize=chunk_size
 )
 
@@ -135,4 +135,4 @@ for chunk in traffic_chunks:
 # --- Save ---
 output_path = "/content/drive/MyDrive/Smart-city/A142_traffic_with_intersection.ttl"
 g.serialize(destination=output_path, format="turtle")
-print(f"✔️ RDF saved with intersection links: {len(g)} triples")
+print(f" RDF saved with intersection links: {len(g)} triples")

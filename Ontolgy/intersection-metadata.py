@@ -221,7 +221,7 @@ with open(SENSOR2LANE_JSON, "w") as f:
 
 output_path = "/content/drive/MyDrive/Smart-city/A142_intersection_ontology.ttl"
 g.serialize(destination=output_path, format="turtle")
-print("✅ Done! Triples:", len(g))
+print("Done! Triples:", len(g))
 print("JSON maps written:",
       "\n  sensors     :", len(sensor_uri_map),
       "\n  lanes       :", len(lane_uri_map),
