@@ -76,15 +76,17 @@ def label_to_bin_uri(label, var_prefix="PM25"):
     return URIRef(str(POLLUTION) + s)
 '''
 
+only_stationID = "DEHE040"
+pollution_bins = []
 for chunk in pollution_chunks:
     # normalize datetime column name if BOM present
     if "ï»¿datetime" in chunk.columns and "datetime" not in chunk.columns:
         chunk = chunk.rename(columns={"ï»¿datetime": "datetime"})
 
-    pollution_bins = []
     triples = []
     for _, row in chunk.iterrows():
         # time
+        '''
         ts = pd.to_datetime(str(row["datetime"]), utc=True, errors="coerce")
         iso_t = ts.isoformat()
         tkey  = urllib.parse.quote_plus(iso_t)
@@ -93,8 +95,9 @@ for chunk in pollution_chunks:
             triples.append((tinst, RDF.type, TIME.Instant))
             triples.append((tinst, TIME.inXSDDateTime, Literal(iso_t, datatype=XSD.dateTime)))
             time_inst_added.add(tkey)
+        '''
 
-        sid = str(row.get("StationID")).strip()
+        sid = str(only_stationID)
         platform_uri  = station_uri_map.get(sid)
         sens_uri  = sensor_uri_map.get(sid)
         if not platform_uri or not sens_uri:
@@ -112,15 +115,15 @@ for chunk in pollution_chunks:
         def add_obs(prop_uri, val, unit_uri=None,category_label=None):
             
             oname = str(prop_uri).split("/")[-1]
-            obs   = EX[f"obs_{sid}_{tkey}_{oname}"]
+            obs   = EX[f"obs_{sid}_{timestamp_seconds}_{oname}"]
             triples.extend([
                 (obs, RDF.type, POLLUTION.PollutionObservation),
                 (obs, RDF.type, SOSA.Observation),
                 (obs, SOSA.madeBySensor, sens),
                 (obs, SOSA.observedProperty, prop_uri),
-                (obs, SOSA.hasSimpleResult, Literal(val, datatype=XSD.double)),
-                (obs, SOSA.phenomenonTime, tinst),
-                (obs, SOSA.resultTime, Literal(iso_t, datatype=XSD.dateTime)),
+                #(obs, SOSA.hasSimpleResult, Literal(val, datatype=XSD.double)),
+                #(obs, SOSA.phenomenonTime, tinst),
+                #(obs, SOSA.resultTime, Literal(iso_t, datatype=XSD.dateTime)),
                 (obs, SOSA.hasFeatureOfInterest, platform),
                 (obs, SC.observedAtTimeIndex, Literal(int(timestamp_seconds), datatype=XSD.long))
             ])
@@ -129,10 +132,14 @@ for chunk in pollution_chunks:
             
             # attach category individual
             if category_label:
+                
                 cat_uri = URIRef(str(POLLUTION) + category_label)
                 triples.append((obs, POLLUTION.hasCategory, cat_uri))
+                triples.append((cat_uri, POLLUTION.isCategoryOf, obs))
+                sub_category_uri = POLLUTION[f"{oname}_Category"]
                 if cat_uri not in pollution_bins:
-                    triples.append((cat_uri, RDF.type, POLLUTION.PollutionCategory))
+                    triples.append((cat_uri, RDF.type, sub_category_uri))
+                    triples.append(sub_category_uri, RDF.type, POLLUTION.PollutionCategory),
                     triples.append((cat_uri, RDFS.label, Literal(category_label)))
                     pollution_bins.append(cat_uri)
         # values + units (µg/m³ typical)
@@ -144,7 +151,7 @@ for chunk in pollution_chunks:
                     category_label=row.get("PM10_category"))
         # note: CSV may have "PM2.5" column name
         if pd.notna(row.get("PM2.5")):
-            add_obs(POLLUTION.PM2_5, float(row["PM2.5"]), UNIT["MicroGM-PER-M3"],
+            add_obs(POLLUTION.PM25, float(row["PM2.5"]), UNIT["MicroGM-PER-M3"],
                     category_label=row.get("PM2.5_category"))
 
     for t in triples:
