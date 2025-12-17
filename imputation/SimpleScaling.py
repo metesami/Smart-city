@@ -60,7 +60,7 @@ def apply_mapping_and_evaluate(model, test_df, loop_col, video_col, clip_negativ
 
 # Example usage:
 df_raw = pd.read_csv("/run/determined/workdir/train.csv")
-test_raw = pd.read_csv("/run/determined/workdir/train.csv")
+test_raw = pd.read_csv("/run/determined/workdir/test.csv")
 train_df = prepare_minute_df(df_raw)
 test_df = prepare_minute_df(test_raw)
 # choose columns for one lane: 
