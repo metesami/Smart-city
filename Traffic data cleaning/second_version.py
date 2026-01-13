@@ -1,3 +1,23 @@
+'''
+در نسخه‌های اولیه، تمام بازه‌هایی که داده‌ی آن‌ها ناموجود یا نامعتبر تشخیص داده می‌شد، بدون تفکیک علت، به‌طور کامل 
+impute می‌شدند.
+این رویکرد اگرچه باعث افزایش ظاهری پیوستگی داده می‌شد، اما ریسک وارد کردن داده‌های مصنوعی و غیرقابل اعتماد به تحلیل را به‌طور قابل‌توجهی افزایش می‌داد.
+
+در نسخه‌ی فعلی، به‌جای تمرکز بر «پر کردن حداکثری داده»، تمرکز اصلی بر قابل‌اعتماد بودن داده‌های مورد استفاده قرار گرفته است.
+به همین دلیل، دلایل مختلف
+missing یا invalid 
+بودن داده به‌صورت صریح شناسایی و تفکیک شده‌اند، و تنها آن دسته از مواردی که به‌احتمال زیاد ناشی از اختلال‌های کوتاه‌مدت یا نویز هستند، به‌عنوان قابل 
+impute
+در نظر گرفته می‌شوند.
+
+در مقابل، بازه‌هایی که نشان‌دهنده‌ی خرابی ساختاری سنسور، رفتار غیرواقعی، یا انحراف شدید از الگوی زمانی معمول هستند، عمداً 
+impute 
+نمی‌شوند و از تحلیل کمی کنار گذاشته می‌شوند.
+این تصمیم باعث می‌شود نتایج نهایی کمتر دچار 
+bias
+شده و تفسیر آن‌ها، به‌ویژه در تحلیل‌های شهری و بلندمدت، معتبرتر و قابل دفاع‌تر باشد.
+'''
+
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
@@ -9,6 +29,29 @@ import json
 from typing import Dict, List, Tuple
 import numpy as np
 import pandas as pd
+
+
+MISSING_REASON_PRIORITY = [
+    "PHYS_INVALID",
+    "CAP_EXCEEDED",
+    "STUCK_OFF",
+    "STUCK_ON",
+    "SPIKE",
+    "CLIFF",
+    "PROFILE_HARD",
+    "ZERO_RUN_LONG",
+    "ZERO_RUN_SHORT",
+    "PROFILE_SOFT",
+    "LOGIC_INVALID",
+    "NONE"
+]
+
+IMPUTABLE_REASONS = {
+    "ZERO_RUN_SHORT",
+    "PROFILE_SOFT",
+    "SPIKE"
+}
+
 
 CONFIG = {
     "timestamp_candidates": [
@@ -189,7 +232,6 @@ def compute_flags_for_sensor(df_sensor: pd.DataFrame) -> pd.DataFrame:
 
     out["count_clean"] = out["count_raw"].astype(float).copy()
     out["dwell_clean"] = out["dwell_raw"].astype(float).copy()
-    out.loc[hard_flags, ["count_clean", "dwell_clean"]] = np.nan
 
     cond_clean = (out["count_clean"] == 0) & (out["dwell_clean"] > 0)
     out.loc[cond_clean, "dwell_clean"] = 0.0
@@ -197,11 +239,66 @@ def compute_flags_for_sensor(df_sensor: pd.DataFrame) -> pd.DataFrame:
     # اگر لازم است ستون‌های کمکی را حذف کن (weekday, bucket, c_med...)
     out = out.drop(columns=[c for c in ["weekday", "bucket", "c_med", "c_iqr", "d_med", "d_iqr"] if c in out.columns])
 
+    # S8 - semantic missing reason (single label per row)
+    out["missing_reason"] = "NONE"
+    
+    out.loc[out["phys_flag"] == 1, "missing_reason"] = "PHYS_INVALID"
+    out.loc[out["cap_flag"] == 1, "missing_reason"] = "CAP_EXCEEDED"
+    out.loc[out["stuck_off"] == 1, "missing_reason"] = "STUCK_OFF"
+    out.loc[out["stuck_on"] == 1, "missing_reason"] = "STUCK_ON"
+    out.loc[out["spike_flag"] == 1, "missing_reason"] = "SPIKE"
+    out.loc[out["cliff_flag"] == 1, "missing_reason"] = "CLIFF"
+    out.loc[out["profile_flag_hard"] == 1, "missing_reason"] = "PROFILE_HARD"
+    
+    # zero-run distinction
+    out.loc[(out["zero_run_soft"] == 1) & (out["stuck_off"] == 0), "missing_reason"] = "ZERO_RUN_SHORT"
+    
+    # soft profile (only if no hard reason already set)
+    mask_soft_profile = (
+        (out["profile_flag_soft"] == 1) &
+        (~out["missing_reason"].isin([
+            "PHYS_INVALID", "CAP_EXCEEDED", "STUCK_OFF",
+            "STUCK_ON", "PROFILE_HARD"
+        ]))
+    )
+    out.loc[mask_soft_profile, "missing_reason"] = "PROFILE_SOFT"
+    
+    # logic invalid
+    out.loc[(out["logic_flag"] == 1) & (out["missing_reason"] == "NONE"), "missing_reason"] = "LOGIC_INVALID"
+
+
+    # Observation mask
+    out["is_clean_observed"] = ((out["missing_reason"] == "NONE")).astype("int8")
+    
+    # Imputability decision
+    out["imputable"] = out["missing_reason"].isin(IMPUTABLE_REASONS).astype("int8")
+
+    out.loc[out["missing_reason"] != "NONE", ["count_clean", "dwell_clean"]] = np.nan
+
+    CONFIDENCE_MAP = {
+    "ZERO_RUN_SHORT": "high",
+    "SPIKE": "medium",
+    "PROFILE_SOFT": "medium",
+    "PROFILE_HARD": "low",
+    "STUCK_OFF": "low",
+    "STUCK_ON": "low",
+    "PHYS_INVALID": "none",
+    "CAP_EXCEEDED": "none",
+    "LOGIC_INVALID": "none",
+    "NONE": "high"
+    }
+
+    out["confidence"] = out["missing_reason"].map(CONFIDENCE_MAP)
+
+    
+
     return out
 
 
 def summarize_sensor(df: pd.DataFrame) -> Dict[str, float]:
     total = len(df)
+
+    #valid_rate denotes the proportion of time intervals that remain usable after applying quality control rules.
     valid = np.sum(~df["count_clean"].isna() & ~df["dwell_clean"].isna())
     return {
         "minutes_total": int(total),
@@ -298,75 +395,3 @@ def process_file(input_path: str, outdir: str, intersection_id: str):
 
 
 
-
-#----------- conver result in .parquet to .csv ----------
-
-import os
-import pandas as pd
-from typing import List
-
-# تنظیمات
-intersection_id = "A142"
-in_dir = "/run/determined/workdir/A142_clean"   # مسیر پوشه‌ای که فایل پارکت داخلشه — اگر جای دیگه است این را تغییر بده
-parquet_path = os.path.join(in_dir, f"{intersection_id}_clean_pre_fusion.parquet")
-csv_fallback = os.path.join(in_dir, f"{intersection_id}_clean_pre_fusion.csv.gz")
-out_csv = os.path.join(in_dir, "imputation_test.csv")
-
-# لیست سنسورهایی که می‌خوای جدا کنی
-SENSORS: List[str] = ["V92", "V84", "D82", "D91"]
-
-# helper: خواندن parquet یا fallback به csv.gz
-def load_result(path_parquet: str, path_csv_gz: str) -> pd.DataFrame:
-    if os.path.exists(path_parquet):
-        print(f"Loading parquet: {path_parquet}")
-        return pd.read_parquet(path_parquet)
-    elif os.path.exists(path_csv_gz):
-        print(f"Parquet not found — loading CSV fallback: {path_csv_gz}")
-        return pd.read_csv(path_csv_gz, parse_dates=["timestamp"])
-    else:
-        raise FileNotFoundError(f"Neither {path_parquet} nor {path_csv_gz} found.")
-
-# بارگذاری
-df = load_result(parquet_path, csv_fallback)
-
-# انتظار داریم df شامل ستون‌هایی مثل: timestamp, sensor_id, count_clean, dwell_clean
-# بررسی اولیه
-required_cols = {"timestamp", "sensor_id", "count_clean", "dwell_clean"}
-if not required_cols.issubset(set(df.columns)):
-    raise ValueError(f"DataFrame missing required columns. Found columns: {df.columns.tolist()}")
-
-# فیلتر سنسورهای مورد نظر
-df_sel = df[df["sensor_id"].isin(SENSORS)].copy()
-if df_sel.empty:
-    raise ValueError(f"No rows found for sensors {SENSORS} in the file.")
-
-# اطمینان از نوع timestamp
-df_sel["timestamp"] = pd.to_datetime(df_sel["timestamp"], errors="coerce")
-
-# pivot به wide: هر سنسور دو ستون جدا (مثلاً V92_count_clean, V92_dwell_clean)
-df_wide_count = df_sel.pivot_table(index="timestamp", columns="sensor_id", values="count_clean", aggfunc="first")
-df_wide_dwell = df_sel.pivot_table(index="timestamp", columns="sensor_id", values="dwell_clean", aggfunc="first")
-
-# مرتب و نامگذاری ستون‌ها
-df_wide_count = df_wide_count.rename(columns=lambda s: f"{s}_count_clean")
-df_wide_dwell = df_wide_dwell.rename(columns=lambda s: f"{s}_dwell_clean")
-
-# join دو ماتریس کنار هم
-df_wide = pd.concat([df_wide_count, df_wide_dwell], axis=1)
-
-# اگر می‌خواهی ستون timestamp هم به عنوان ستون عادی باشد (نه ایندکس)
-df_wide = df_wide.reset_index().sort_values("timestamp")
-
-# گزینه: مرتب کردن ستون‌ها بر اساس لیست SENSORS تا زوج‌ها پیوست باشند
-ordered_cols = ["timestamp"]
-for s in SENSORS:
-    ordered_cols.append(f"{s}_count_clean")
-    ordered_cols.append(f"{s}_dwell_clean")
-# اضافه کردن هر ستونی که وجود دارد ولی در ordered_cols نیامده (برای ایمنی)
-remaining = [c for c in df_wide.columns if c not in ordered_cols]
-final_cols = [c for c in ordered_cols if c in df_wide.columns] + remaining
-df_wide = df_wide[final_cols]
-
-# ذخیره CSV نهایی (بدون فشرده‌سازی، برای استفاده راحت در آزمایش مدل‌ها)
-df_wide.to_csv(out_csv, index=False)
-print(f"Saved imputation test CSV: {out_csv}")
