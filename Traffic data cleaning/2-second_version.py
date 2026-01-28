@@ -393,5 +393,6 @@ def process_file(input_path: str, outdir: str, intersection_id: str):
 
 
 
-
+%time
+process_file('/run/determined/workdir/A142_traffic_1min.csv','Cleaned_data','A142')
 
