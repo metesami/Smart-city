@@ -66,7 +66,7 @@ def attach_point_geometry(subject_uri, lat, lon, geom_suffix="_geom_main"):
     wkt  = f"POINT({lon} {lat})"
     g.add((subject_uri, SC.hasGeometry, geom))
     g.add((geom, RDF.type, GEO.Geometry))
-    g.add((geom, GEO.asWKT, Literal(wkt, datatype=GEO.wktLiteral)))
+    g.add((geom, SC.asWKT, Literal(wkt, datatype=GEO.wktLiteral)))
     return geom
 
 def parse_bool(v):
@@ -223,7 +223,7 @@ for _, row in metadata_df.iterrows():
             g.add((sensor_uri, TRAFFIC.distanceToStopline, Literal(float(dist_stop), datatype=XSD.float)))
 
         if conn_roads is not None and not pd.isna(conn_roads):
-            g.add((sensor_uri, TRAFFIC.connectedRoads, Literal(str(conn_roads))))
+            g.add((lane_uri, TRAFFIC.connectedRoads, Literal(str(conn_roads))))
 
         # sensor-lane links
         g.add((sensor_uri, TRAFFIC.detectsTrafficOn, lane_uri))

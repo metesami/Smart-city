@@ -120,7 +120,7 @@ while True:
             obs_count = EX[f"obsCount_{sid}_{t_idx}"]
             g.add((obs_count, RDF.type, SOSA.Observation))
             g.add((obs_count, RDF.type, TRAFFIC.TrafficObservation))
-            g.add((obs_count, SOSA.madeBySensor, sensor_uri))
+            g.add((obs_count, TRAFFIC.madeBySensor, sensor_uri))
             g.add((obs_count, SOSA.observedProperty, TRAFFIC.VehicleCount))
             g.add((obs_count, SOSA.hasSimpleResult, Literal(float(count_10min), datatype=XSD.double)))
             g.add((obs_count, SOSA.phenomenonTime, t_inst))
@@ -128,7 +128,7 @@ while True:
             g.add((obs_count, SC.aggregationWindowSeconds, Literal(600, datatype=XSD.integer)))
 
             if lane_uri:
-                g.add((obs_count, SOSA.hasFeatureOfInterest, lane_uri))
+                g.add((obs_count, TRAFFIC.hasFeatureOfInterest, lane_uri))
 
             if pd.notna(conf_min):
                 g.add((obs_count, TRAFFIC.confidenceMin, Literal(float(conf_min), datatype=XSD.double)))
@@ -148,7 +148,7 @@ while True:
             obs_occ = EX[f"obsOcc_{sid}_{t_idx}"]
             g.add((obs_occ, RDF.type, SOSA.Observation))
             g.add((obs_occ, RDF.type, TRAFFIC.TrafficObservation))
-            g.add((obs_occ, SOSA.madeBySensor, sensor_uri))
+            g.add((obs_occ, TRAFFIC.madeBySensor, sensor_uri))
             g.add((obs_occ, SOSA.observedProperty, TRAFFIC.OccupancyTime))
             g.add((obs_occ, SOSA.hasSimpleResult, Literal(float(occ_time), datatype=XSD.double)))
             g.add((obs_occ, SOSA.phenomenonTime, t_inst))
@@ -156,7 +156,7 @@ while True:
             g.add((obs_occ, SC.aggregationWindowSeconds, Literal(600, datatype=XSD.integer)))
 
             if lane_uri:
-                g.add((obs_occ, SOSA.hasFeatureOfInterest, lane_uri))
+                g.add((obs_occ, TRAFFIC.hasFeatureOfInterest, lane_uri))
 
             if pd.notna(conf_min):
                 g.add((obs_occ, TRAFFIC.confidenceMin, Literal(float(conf_min), datatype=XSD.double)))

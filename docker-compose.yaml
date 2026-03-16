@@ -22,6 +22,7 @@ services:
       - "7200:7200"
     volumes:
       - "C:/PhD/Docker/graphdb_data:/opt/graphdb/home"
+      - "C:/PhD/Docker/data:/root/graphdb-import"
     networks:
       - smartcity_network
 
