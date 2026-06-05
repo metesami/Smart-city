@@ -1,5 +1,5 @@
 Folder PATH listing for volume OS
-Volume serial number is 00000086 2279:20EE
+Volume serial number is 2279-20EE
 C:.
 ¦   .gitignore
 ¦   docker-compose.yaml
@@ -12,6 +12,7 @@ C:.
 +---data
 ¦   +---interim
 ¦   +---processed
+¦   ¦   +---traffic
 ¦   +---raw
 +---legacy
 ¦   +---Aboxes
@@ -73,10 +74,14 @@ C:.
 +---outputs
 ¦   +---figures
 ¦   +---logs
+¦   ¦       A142_traffic_cleaning.log
+¦   ¦       
 ¦   +---models
 ¦   +---reports
 +---scripts
 ¦       check_project_structure.py
+¦       compare_traffic_outputs.py
+¦       run_traffic_cleaning.py
 ¦       
 +---src
     +---smartcity
@@ -95,14 +100,22 @@ C:.
         ¦       __init__.py
         ¦       
         +---traffic
-        ¦       __init__.py
-        ¦       
-        +---utils
+        ¦   ¦   cleaning.py
         ¦   ¦   config.py
         ¦   ¦   __init__.py
         ¦   ¦   
         ¦   +---__pycache__
+        ¦           cleaning.cpython-312.pyc
         ¦           config.cpython-312.pyc
+        ¦           __init__.cpython-312.pyc
+        ¦           
+        +---utils
+        ¦   ¦   config.py
+        ¦   ¦   logging.py
+        ¦   ¦   __init__.py
+        ¦   ¦   
+        ¦   +---__pycache__
+        ¦           logging.cpython-312.pyc
         ¦           __init__.cpython-312.pyc
         ¦           
         +---validation
