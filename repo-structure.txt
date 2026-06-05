@@ -1,6 +1,7 @@
 Folder PATH listing for volume OS
-Volume serial number is 00000028 2279:20EE
+Volume serial number is 00000086 2279:20EE
 C:.
+¦   .gitignore
 ¦   docker-compose.yaml
 ¦   intersection.py
 ¦   repo-structure.txt
@@ -75,6 +76,8 @@ C:.
 ¦   +---models
 ¦   +---reports
 +---scripts
+¦       check_project_structure.py
+¦       
 +---src
     +---smartcity
         ¦   __init__.py
@@ -95,11 +98,19 @@ C:.
         ¦       __init__.py
         ¦       
         +---utils
-        ¦       __init__.py
-        ¦       
+        ¦   ¦   config.py
+        ¦   ¦   __init__.py
+        ¦   ¦   
+        ¦   +---__pycache__
+        ¦           config.cpython-312.pyc
+        ¦           __init__.cpython-312.pyc
+        ¦           
         +---validation
         ¦       __init__.py
         ¦       
         +---weather
-                __init__.py
+        ¦       __init__.py
+        ¦       
+        +---__pycache__
+                __init__.cpython-312.pyc
                 
