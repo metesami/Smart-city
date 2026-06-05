@@ -181,6 +181,15 @@ def compute_flags_for_sensor(df_sensor: pd.DataFrame) -> pd.DataFrame:
     prof_d = build_time_profiles(out["timestamp"], out["dwell_raw"], profile_minutes=CONFIG["profile_group_minutes"]).reset_index().rename(columns={"median": "d_med", "iqr": "d_iqr"})
 
     out = out.assign(weekday=weekday.values, bucket=bucket.values)
+    out["weekday"] = out["weekday"].astype("int64")
+    out["bucket"] = out["bucket"].astype("int64")
+
+    prof_c["weekday"] = prof_c["weekday"].astype("int64")
+    prof_c["bucket"] = prof_c["bucket"].astype("int64")
+
+    prof_d["weekday"] = prof_d["weekday"].astype("int64")
+    prof_d["bucket"] = prof_d["bucket"].astype("int64")
+
 
     out = out.merge(prof_c[["weekday", "bucket", "c_med", "c_iqr"]], how="left", on=["weekday", "bucket"])
     out = out.merge(prof_d[["weekday", "bucket", "d_med", "d_iqr"]], how="left", on=["weekday", "bucket"])
@@ -384,3 +393,9 @@ def process_file(input_path: str, outdir: str, intersection_id: str):
         json.dump(CONFIG, f, indent=2)
 
     print(f"Saved summary: {summary_csv}")
+
+process_file(
+    input_path=r"C:\PhD\Dataset\Test ontology_A142\traffic_data_a142_test.csv",
+    outdir=r"C:\PhD\Dataset\Test ontology_A142\new_pipeline_output_old",
+    intersection_id="A142",
+)

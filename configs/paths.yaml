@@ -1,0 +1,18 @@
+project_root: .
+
+data:
+  raw: data/raw
+  interim: data/interim
+  processed: data/processed
+
+outputs:
+  logs: outputs/logs
+  reports: outputs/reports
+  figures: outputs/figures
+  models: outputs/models
+
+legacy:
+  traffic_cleaning: legacy/traffic_data_cleaning
+  raw_preparation: legacy/prepare_raw_data
+  aboxes: legacy/Aboxes
+  imputation: legacy/imputation

@@ -1,11 +1,116 @@
 Folder PATH listing for volume OS
-Volume serial number is 000000DE 2279:20EE
+Volume serial number is 00000086 2279:20EE
 C:.
-+---Aboxes
-¦   +---version 1.0
-¦   +---version 2.0
-¦   +---version 2.1
-¦   +---version 2.2
-+---imputation
-+---prepare raw data
-+---Traffic data cleaning
+¦   .gitignore
+¦   docker-compose.yaml
+¦   intersection.py
+¦   repo-structure.txt
+¦   
++---configs
+¦       paths.yaml
+¦       
++---data
+¦   +---interim
+¦   +---processed
+¦   +---raw
++---legacy
+¦   +---Aboxes
+¦   ¦   +---version 1.0
+¦   ¦   ¦       intersection-metadata.py
+¦   ¦   ¦       pollution.py
+¦   ¦   ¦       Quadrople_pollution.py
+¦   ¦   ¦       spatial-links_v1.py
+¦   ¦   ¦       traffic.py
+¦   ¦   ¦       weather.py
+¦   ¦   ¦       
+¦   ¦   +---version 2.0
+¦   ¦   ¦       intersection-metadata_v2.py
+¦   ¦   ¦       pollution_v2.py
+¦   ¦   ¦       traffic_v2.py
+¦   ¦   ¦       weather_v2.py
+¦   ¦   ¦       
+¦   ¦   +---version 2.1
+¦   ¦   ¦       intersection_metadata_abox_v2.1.py
+¦   ¦   ¦       pollution_v2.1.py
+¦   ¦   ¦       traffic_v2.1_nt.py
+¦   ¦   ¦       traffic_v2.1_turtle.py
+¦   ¦   ¦       weather_v2.1.py
+¦   ¦   ¦       
+¦   ¦   +---version 2.2
+¦   ¦           intersection_metadata_abox_v2.2.py
+¦   ¦           pollution_abox_v2.2.py
+¦   ¦           pollution_context_abox_v2.2.py
+¦   ¦           shared_targets_abox_v2.2.py
+¦   ¦           traffic_abox_v2.2_nt.py
+¦   ¦           weather_abox_v2.2.py
+¦   ¦           weather_context_abox_v2.2.py
+¦   ¦           
+¦   +---imputation
+¦   ¦       ConditionalScailing.py
+¦   ¦       imputation_layers_ZERO_RUN_SHORT_profile_soft.py
+¦   ¦       imputeWithVideoSensorSameLine.py
+¦   ¦       MlModel.py
+¦   ¦       policy.md
+¦   ¦       SimpleScaling.py
+¦   ¦       validation_imputation.py
+¦   ¦       
+¦   +---prepare_raw_data
+¦   ¦       all_pollution_combine_10min.py
+¦   ¦       all_traffic_combine.py
+¦   ¦       all_weather_combine_10min.py
+¦   ¦       pollution_flags_unix_timestamp.py
+¦   ¦       traffic_10min_and_validation.py
+¦   ¦       weather_flags_unix_timestamp.py
+¦   ¦       
+¦   +---Traffic_data_cleaning
+¦           1-first_version.py
+¦           2-second_version.py
+¦           3-Strict_version_hard_soft_NaN.py
+¦           4-old_version_with_missing_reason.py
+¦           conver_result_parquet_to_csv.py
+¦           Test.py
+¦           
++---outputs
+¦   +---figures
+¦   +---logs
+¦   +---models
+¦   +---reports
++---scripts
+¦       check_project_structure.py
+¦       
++---src
+    +---smartcity
+        ¦   __init__.py
+        ¦   
+        +---features
+        ¦       __init__.py
+        ¦       
+        +---imputation
+        ¦       __init__.py
+        ¦       
+        +---kg
+        ¦       __init__.py
+        ¦       
+        +---pollution
+        ¦       __init__.py
+        ¦       
+        +---traffic
+        ¦       __init__.py
+        ¦       
+        +---utils
+        ¦   ¦   config.py
+        ¦   ¦   __init__.py
+        ¦   ¦   
+        ¦   +---__pycache__
+        ¦           config.cpython-312.pyc
+        ¦           __init__.cpython-312.pyc
+        ¦           
+        +---validation
+        ¦       __init__.py
+        ¦       
+        +---weather
+        ¦       __init__.py
+        ¦       
+        +---__pycache__
+                __init__.cpython-312.pyc
+                
