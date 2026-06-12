@@ -1,5 +1,5 @@
 Folder PATH listing for volume OS
-Volume serial number is 2279-20EE
+Volume serial number is 00000011 2279:20EE
 C:.
 ¦   .gitignore
 ¦   docker-compose.yaml
@@ -11,9 +11,254 @@ C:.
 ¦       
 +---data
 ¦   +---interim
-¦   +---processed
 ¦   ¦   +---traffic
+¦   ¦           A142_traffic_1min.csv
+¦   ¦           
+¦   +---metadata
+¦   ¦   +---intersections
+¦   ¦           A003_L7_20231010_complete.xlsx
+¦   ¦           A004_L7_20240312_complete.xlsx
+¦   ¦           A005_L5_20240702_complete.xlsx
+¦   ¦           A006_L4_20221115_complete.xlsx
+¦   ¦           A007_L1_20240312_complete.xlsx
+¦   ¦           A008_L6_20230905_complete.xlsx
+¦   ¦           A009_L4_20230901_complete.xlsx
+¦   ¦           A010_L5_20240227_complete.xlsx
+¦   ¦           A011_L4_20231121_complete.xlsx
+¦   ¦           A012_L5_20240307_complete.xlsx
+¦   ¦           A013_L8_20231018_complete.xlsx
+¦   ¦           A014_L9_20231013_complete.xlsx
+¦   ¦           A015_L8_20231013_complete.xlsx
+¦   ¦           A016_L4_20240208_complete.xlsx
+¦   ¦           A017_L5_20231116_complete.xlsx
+¦   ¦           A018_L2_20240312_complete.xlsx
+¦   ¦           A019_L4_20231017_complete.xlsx
+¦   ¦           A020_L6_20231018_complete.xlsx
+¦   ¦           A021_L6_20231012_complete.xlsx
+¦   ¦           A022_L5_20231012_complete.xlsx
+¦   ¦           A023_L5_20250328_complete.xlsx
+¦   ¦           A024_L4_20240905_complete.xlsx
+¦   ¦           A025_L6_20231031_complete.xlsx
+¦   ¦           A026_L4_20240229_complete.xlsx
+¦   ¦           A027_L8_20230907_complete.xlsx
+¦   ¦           A028_L4_20231026_complete.xlsx
+¦   ¦           A029_L5_20240905_complete.xlsx
+¦   ¦           A030_L5_20231026_complete.xlsx
+¦   ¦           A031_L4_20231026_complete.xlsx
+¦   ¦           A032_L6_20231026_complete.xlsx
+¦   ¦           A033_L7_20231121_complete.xlsx
+¦   ¦           A034_L6_20231027_complete.xlsx
+¦   ¦           A035_L6_20231027_complete.xlsx
+¦   ¦           A036_L6_20240312_complete.xlsx
+¦   ¦           A037_L2_20240229_complete.xlsx
+¦   ¦           A038_L4_20230901_complete.xlsx
+¦   ¦           A039_L4_20230901_complete.xlsx
+¦   ¦           A040_L4_20230901_complete.xlsx
+¦   ¦           A041_L4_20240229_complete.xlsx
+¦   ¦           A042_L4_20231116_complete.xlsx
+¦   ¦           A044_L3_20240312_complete.xlsx
+¦   ¦           A045_L6_20231012_complete.xlsx
+¦   ¦           A046_L4_20231012_complete.xlsx
+¦   ¦           A047_L5_20240409_complete.xlsx
+¦   ¦           A048_L5_20231024_complete.xlsx
+¦   ¦           A050_L6_20240215_complete.xlsx
+¦   ¦           A051_L9_20230907_complete.xlsx
+¦   ¦           A052_L5_20230907_complete.xlsx
+¦   ¦           A053_L5_20240215_complete.xlsx
+¦   ¦           A054_L6_20240215_complete.xlsx
+¦   ¦           A055_L6_20240215_complete.xlsx
+¦   ¦           A056_L6_20240215_complete.xlsx
+¦   ¦           A057_L4_20231024_complete.xlsx
+¦   ¦           A058_L3_20240613_complete.xlsx
+¦   ¦           A059_L5_20231031_complete.xlsx
+¦   ¦           A060_L4_20240411_complete.xlsx
+¦   ¦           A061_L3_20240411_complete.xlsx
+¦   ¦           A062_L4_20231215_complete.xlsx
+¦   ¦           A063_L5_20240305_complete.xlsx
+¦   ¦           A064_L6_20240216_complete.xlsx
+¦   ¦           A065_L6_20240216_complete.xlsx
+¦   ¦           A066_L5_20230912_complete.xlsx
+¦   ¦           A067_L6_20240307_complete.xlsx
+¦   ¦           A068_L5_20240411_complete.xlsx
+¦   ¦           A069_L8_20231026_complete.xlsx
+¦   ¦           A070_L1_20231218_complete.xlsx
+¦   ¦           A071_L4_20231031_complete.xlsx
+¦   ¦           A072_L8_20240220_complete.xlsx
+¦   ¦           A073_L5_20240216_complete.xlsx
+¦   ¦           A074_L2_20231031_complete.xlsx
+¦   ¦           A075_L6_20231031_complete.xlsx
+¦   ¦           A076_L7_20240411_complete.xlsx
+¦   ¦           A077_L4_20230905_complete.xlsx
+¦   ¦           A078_L5_20240416_complete.xlsx
+¦   ¦           A079_L1_20240416_complete.xlsx
+¦   ¦           A080_L5_20230905_complete.xlsx
+¦   ¦           A081_L4_20230905_complete.xlsx
+¦   ¦           A082_L6_20240220_complete.xlsx
+¦   ¦           A083_L2_20240229_complete.xlsx
+¦   ¦           A084_L4_20231121_complete.xlsx
+¦   ¦           A085_L2_20240301_complete.xlsx
+¦   ¦           A086_L5_20231031_complete.xlsx
+¦   ¦           A087_L4_20240227_complete.xlsx
+¦   ¦           A088_L5_20240213_complete.xlsx
+¦   ¦           A089_L5_20240227_complete.xlsx
+¦   ¦           A090_L3_20240229_complete.xlsx
+¦   ¦           A091_L1_20240604_complete.xlsx
+¦   ¦           A092_L1_20240604_complete.xlsx
+¦   ¦           A093_L2_20240604_complete.xlsx
+¦   ¦           A094_L5_20240301_complete.xlsx
+¦   ¦           A095_L6_20231109_complete.xlsx
+¦   ¦           A096_L5_20240305_complete.xlsx
+¦   ¦           A097_L6_20231110_complete.xlsx
+¦   ¦           A098_L7_20231017_complete.xlsx
+¦   ¦           A099_L3_20240227_complete.xlsx
+¦   ¦           A100_L3_20240604_complete.xlsx
+¦   ¦           A101_L4_20231124_complete.xlsx
+¦   ¦           A102_L2_20240305_complete.xlsx
+¦   ¦           A103_L4_20231017_complete.xlsx
+¦   ¦           A104_L5_20231012_complete.xlsx
+¦   ¦           A105_L4_20240613_complete.xlsx
+¦   ¦           A106_L2_20231124_complete.xlsx
+¦   ¦           A107_L4_20240606_complete.xlsx
+¦   ¦           A108_L4_20240606_complete.xlsx
+¦   ¦           A110_L2_20240802_complete.xlsx
+¦   ¦           A111_L2_20231121_complete.xlsx
+¦   ¦           A112_L1_20240118_complete.xlsx
+¦   ¦           A113_L5_20240606_complete.xlsx
+¦   ¦           A114_L1_20240118_complete.xlsx
+¦   ¦           A115_L3_20240606_complete.xlsx
+¦   ¦           A116_L3_20231116_complete.xlsx
+¦   ¦           A117_L4_20240305_complete.xlsx
+¦   ¦           A118_L2_20231121_complete.xlsx
+¦   ¦           A119_L2_20240208_complete.xlsx
+¦   ¦           A120_L3_20240607_complete.xlsx
+¦   ¦           A121_L3_20240606_complete.xlsx
+¦   ¦           A122_L5_20240229_complete.xlsx
+¦   ¦           A123_L3_20240119_complete.xlsx
+¦   ¦           A124_L3_20240208_complete.xlsx
+¦   ¦           A125_L1_20240607_complete.xlsx
+¦   ¦           A126_L5_20240705_complete.xlsx
+¦   ¦           A127_L3_20240705_complete.xlsx
+¦   ¦           A128_L3_20240307_complete.xlsx
+¦   ¦           A130_L3_20240216_complete.xlsx
+¦   ¦           A131_L5_20240229_complete.xlsx
+¦   ¦           A132_L3_20240123_complete.xlsx
+¦   ¦           A134_L2_20200802_complete.xlsx
+¦   ¦           A136_L2_20240305_complete.xlsx
+¦   ¦           A137_L5_20231109_complete.xlsx
+¦   ¦           A139_L2_20240627_complete.xlsx
+¦   ¦           A140_L3_20240123_complete.xlsx
+¦   ¦           A141_L3_20231027_complete.xlsx
+¦   ¦           A142_L5_20230901_complete.xlsx
+¦   ¦           A144_L5_20231110_complete.xlsx
+¦   ¦           A145_L2_20240704_complete.xlsx
+¦   ¦           A146_L8_20231114_complete.xlsx
+¦   ¦           A147_L5_20231109_complete.xlsx
+¦   ¦           A148_L2_20240123_complete.xlsx
+¦   ¦           A149_L2_20240123_complete.xlsx
+¦   ¦           A150_L3_20240705_complete.xlsx
+¦   ¦           A151_L7_20231013_complete.xlsx
+¦   ¦           A152_L2_20240123_complete.xlsx
+¦   ¦           A153_L3_20240125_complete.xlsx
+¦   ¦           A154_L4_20231010_complete.xlsx
+¦   ¦           A155_L5_20231219_complete.xlsx
+¦   ¦           A156_L2_20240125_complete.xlsx
+¦   ¦           A157_L4_20240125_complete.xlsx
+¦   ¦           A160_L3_20240130_complete.xlsx
+¦   ¦           A162_L5_20240709_complete.xlsx
+¦   ¦           A164_L4_20240618_complete.xlsx
+¦   ¦           A165_L6_20240130_complete.xlsx
+¦   ¦           A166_L3_20240201_complete.xlsx
+¦   ¦           A167_L3_20240202_complete.xlsx
+¦   ¦           A169_L1_20240305_complete.xlsx
+¦   ¦           A170_L2_20240301_complete.xlsx
+¦   ¦           A171_L1_20240709_complete.xlsx
+¦   ¦           A172_L4_20240709_complete.xlsx
+¦   ¦           A173_L3_20240206_complete.xlsx
+¦   ¦           A174_L3_20231031_complete.xlsx
+¦   ¦           A175_L1_20240801_complete.xlsx
+¦   ¦           A179_L2_20240709_complete.xlsx
+¦   ¦           A181_L3_20240718_complete.xlsx
+¦   ¦           A182_L5_20240719_complete.xlsx
+¦   ¦           A183_L5_20240307_complete.xlsx
+¦   ¦           A184_L5_20240213_complete.xlsx
+¦   ¦           A185_L2_20240206_complete.xlsx
+¦   ¦           A188_L1_20240618_complete.xlsx
+¦   ¦           
+¦   +---processed
+¦   ¦   +---intersection
+¦   ¦   ¦       A142_L5_20230901_complete.csv
+¦   ¦   ¦       
+¦   ¦   +---traffic
+¦   ¦       ¦   A142_clean_pre_fusion.parquet
+¦   ¦       ¦   A142_config.json
+¦   ¦       ¦   A142_sensor_summary.csv
+¦   ¦       ¦   
+¦   ¦       +---aggregated
+¦   ¦       ¦       A142_traffic_10min.parquet
+¦   ¦       ¦       
+¦   ¦       +---imputed
+¦   ¦               A142_imputed.parquet
+¦   ¦               
 ¦   +---raw
+¦       +---traffic
+¦           +---A142
+¦               +---A142_2022
+¦               ¦       A142_20220101_000000_-_20220201_000000_1min.csv
+¦               ¦       A142_20220201_000000_-_20220301_000000_1min.csv
+¦               ¦       A142_20220301_000000_-_20220401_000000_1min.csv
+¦               ¦       A142_20220401_000000_-_20220501_000000_1min.csv
+¦               ¦       A142_20220501_000000_-_20220601_000000_1min.csv
+¦               ¦       A142_20220601_000000_-_20220701_000000_1min.csv
+¦               ¦       A142_20220701_000000_-_20220801_000000_1min.csv
+¦               ¦       A142_20220801_000000_-_20220901_000000_1min.csv
+¦               ¦       A142_20220901_000000_-_20221001_000000_1min.csv
+¦               ¦       A142_20221001_000000_-_20221101_000000_1min.csv
+¦               ¦       A142_20221101_000000_-_20221201_000000_1min.csv
+¦               ¦       A142_20221201_000000_-_20230101_000000_1min.csv
+¦               ¦       
+¦               +---A142_2023
+¦               ¦       A142_20230101_000000_-_20230201_000000_1min.csv
+¦               ¦       A142_20230201_000000_-_20230301_000000_1min.csv
+¦               ¦       A142_20230301_000000_-_20230401_000000_1min.csv
+¦               ¦       A142_20230401_000000_-_20230402_080000_1min.csv
+¦               ¦       A142_20230402_080000_-_20230501_000000_1min.csv
+¦               ¦       A142_20230501_000000_-_20230601_000000_1min.csv
+¦               ¦       A142_20230601_000000_-_20230701_000000_1min.csv
+¦               ¦       A142_20230701_000000_-_20230801_000000_1min.csv
+¦               ¦       A142_20230801_000000_-_20230901_000000_1min.csv
+¦               ¦       A142_20230901_000000_-_20231001_000000_1min.csv
+¦               ¦       A142_20231001_000000_-_20231101_000000_1min.csv
+¦               ¦       A142_20231101_000000_-_20231201_000000_1min.csv
+¦               ¦       A142_20231201_000000_-_20240101_000000_1min.csv
+¦               ¦       
+¦               +---A142_2024
+¦               ¦       A142_20240101_000000_-_20240201_000000_1min.csv
+¦               ¦       A142_20240201_000000_-_20240301_000000_1min.csv
+¦               ¦       A142_20240301_000000_-_20240401_000000_1min.csv
+¦               ¦       A142_20240401_000000_-_20240501_000000_1min.csv
+¦               ¦       A142_20240501_000000_-_20240601_000000_1min.csv
+¦               ¦       A142_20240601_000000_-_20240701_000000_1min.csv
+¦               ¦       A142_20240701_000000_-_20240801_000000_1min.csv
+¦               ¦       A142_20240801_000000_-_20240901_000000_1min.csv
+¦               ¦       A142_20240901_000000_-_20241001_000000_1min.csv
+¦               ¦       A142_20241001_000000_-_20241101_000000_1min.csv
+¦               ¦       A142_20241101_000000_-_20241201_000000_1min.csv
+¦               ¦       A142_20241201_000000_-_20250101_000000_1min.csv
+¦               ¦       
+¦               +---A142_2025
+¦                       A142_20250101_000000_-_20250201_000000_1min.csv
+¦                       A142_20250201_000000_-_20250301_000000_1min.csv
+¦                       A142_20250301_000000_-_20250401_000000_1min.csv
+¦                       A142_20250401_000000_-_20250501_000000_1min.csv
+¦                       A142_20250501_000000_-_20250601_000000_1min.csv
+¦                       A142_20250601_000000_-_20250701_000000_1min.csv
+¦                       A142_20250701_000000_-_20250801_000000_1min.csv
+¦                       A142_20250801_000000_-_20250901_000000_1min.csv
+¦                       A142_20250901_000000_-_20251001_000000_1min.csv
+¦                       A142_20251001_000000_-_20251101_000000_1min.csv
+¦                       A142_20251101_000000_-_20251201_000000_1min.csv
+¦                       A142_20251201_000000_-_20260101_000000_1min.csv
+¦                       
 +---legacy
 ¦   +---Aboxes
 ¦   ¦   +---version 1.0
@@ -75,13 +320,29 @@ C:.
 ¦   +---figures
 ¦   +---logs
 ¦   ¦       A142_traffic_cleaning.log
+¦   ¦       A142_traffic_combine.log
+¦   ¦       traffic_aggregation.log
+¦   ¦       traffic_aggregation_validation.log
+¦   ¦       traffic_imputation.log
+¦   ¦       traffic_imputation_summary.log
 ¦   ¦       
 ¦   +---models
 ¦   +---reports
+¦           A142_imputation_summary.csv
+¦           A142_traffic_10min_by_sensor.csv
+¦           A142_traffic_10min_summary.csv
+¦           
 +---scripts
+¦       build_intersection_abox.py
+¦       build_traffic_abox.py
 ¦       check_project_structure.py
 ¦       compare_traffic_outputs.py
+¦       run_traffic_aggregation.py
 ¦       run_traffic_cleaning.py
+¦       run_traffic_combine.py
+¦       run_traffic_imputation.py
+¦       summarize_traffic_imputation.py
+¦       validate_traffic_aggregation.py
 ¦       
 +---src
     +---smartcity
@@ -91,21 +352,39 @@ C:.
         ¦       __init__.py
         ¦       
         +---imputation
-        ¦       __init__.py
-        ¦       
+        ¦   ¦   traffic_imputation.py
+        ¦   ¦   __init__.py
+        ¦   ¦   
+        ¦   +---__pycache__
+        ¦           traffic_imputation.cpython-312.pyc
+        ¦           __init__.cpython-312.pyc
+        ¦           
         +---kg
-        ¦       __init__.py
-        ¦       
+        ¦   ¦   intersection_abox.py
+        ¦   ¦   traffic_abox.py
+        ¦   ¦   __init__.py
+        ¦   ¦   
+        ¦   +---__pycache__
+        ¦           intersection_abox.cpython-312.pyc
+        ¦           traffic_abox.cpython-312.pyc
+        ¦           __init__.cpython-312.pyc
+        ¦           
         +---pollution
         ¦       __init__.py
         ¦       
         +---traffic
+        ¦   ¦   aggregation.py
+        ¦   ¦   aggregation_validation.py
         ¦   ¦   cleaning.py
+        ¦   ¦   combine.py
         ¦   ¦   config.py
         ¦   ¦   __init__.py
         ¦   ¦   
         ¦   +---__pycache__
+        ¦           aggregation.cpython-312.pyc
+        ¦           aggregation_validation.cpython-312.pyc
         ¦           cleaning.cpython-312.pyc
+        ¦           combine.cpython-312.pyc
         ¦           config.cpython-312.pyc
         ¦           __init__.cpython-312.pyc
         ¦           
